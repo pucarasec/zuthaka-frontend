@@ -1,26 +1,15 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import Main from "./routes/Main";
+import { SnackbarProvider } from "notistack";
+import { ThemeProvider } from "@material-ui/core";
+import { getTheme } from "./util/Theme";
 
-function App() {
+export default () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider theme={getTheme()}>
+      <SnackbarProvider maxSnack={3}>
+        <Main />
+      </SnackbarProvider>
+    </ThemeProvider>
   );
-}
-
-export default App;
+};

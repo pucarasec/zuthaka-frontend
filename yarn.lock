@@ -6934,10 +6934,10 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-material-crud@^0.5.6:
-  version "0.5.6"
-  resolved "https://registry.yarnpkg.com/material-crud/-/material-crud-0.5.6.tgz#9f27f0c00b35f5f62db660cac32df2a41c8e0b86"
-  integrity sha512-Y+mb8Ia4W0STUI6CqM4JDW6Bw/ullQVHdRgVBzmkEvrlatveoNPNh6GngReb3OqH85HR7xR5oYEwlvpU9ZJeAw==
+material-crud@^0.5.7:
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/material-crud/-/material-crud-0.5.7.tgz#af4e9c1255027521549b45312f5900f273c8079a"
+  integrity sha512-a8tUtFeqPH5W4oTiDnvElVyqzI35E3k3Kvj1KCrUAn7GU9k2G2Mw9IMHldPECqBu9IllpdTb40zCVx6z9T/2rQ==
   dependencies:
     formik "^2.1.5"
 

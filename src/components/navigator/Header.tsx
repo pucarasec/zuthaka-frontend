@@ -26,7 +26,7 @@ export default memo(({ menu, onMenu, routes }: Props) => {
 				</Typography>
 				<IconButton edge="end" color="inherit" onClick={() => console.log('logout')}>
 					<FaUser />
-					Usuario
+					User
 				</IconButton>
 			</Toolbar>
 		</AppBar>

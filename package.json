@@ -14,7 +14,7 @@
     "@types/react-dom": "^16.9.0",
     "@types/react-icons": "^3.0.0",
     "formik": "^2.1.5",
-    "material-crud": "^0.5.6",
+    "material-crud": "^0.5.7",
     "notistack": "^1.0.0",
     "react": "^16.13.1",
     "react-custom-scrollbars": "^4.2.1",

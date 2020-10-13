@@ -1,9 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import { Button } from '@material-ui/core'
-import TableExample from '../components/TableExample'
-import { Dialog, CenteredCard, Form, Crud, Types } from 'material-crud'
-import { english } from '../util/lang'
+import { Crud, Types, createFields, useWindowSize } from 'material-crud'
 
 interface LauncherProps {
 	id: string
@@ -14,77 +10,54 @@ interface LauncherProps {
 	actions: string
 }
 
-const Item = ({ id, cTwo, listener, type, creationDate, actions }: LauncherProps) => {
-	return (
-		<div style={{ flex: 1 }}>
-			<div>
-				<span>ID: {id}</span>
-				<span>C2: {cTwo}</span>
-				<span>Listener: {listener}</span>
-			</div>
-		</div>
-	)
-}
+const fields = createFields(() => [
+	{
+		id: 'c2_id_query',
+		type: Types.Options,
+		options: [
+			{ id: '1', title: 'Empire' },
+			{ id: '2', title: 'OTRO' },
+			{ id: '3', title: 'TERCERO' },
+		],
+		title: 'C2',
+		placeholder: 'Select one C2',
+	},
+	{
+		id: 'type',
+		type: Types.Options,
+		options: [
+			{ id: '1', title: 'HTTP' },
+			{ id: '2', title: 'HTTPS' },
+		],
+		title: 'Types',
+		placeholder: 'Select one type',
+	},
+])
 
 export default () => {
+	const { height } = useWindowSize()
+
 	return (
 		<Crud
-			renderItem={props => <Item {...props} />}
-			name="Launcher"
+			height={height}
 			description="Launcher"
-			lang={english}
-			fields={[
-				{
-					id: 'c2_id_query',
-					type: Types.Options,
-					options: [
-						{ id: '1', title: 'Empire' },
-						{ id: '2', title: 'OTRO' },
-						{ id: '3', title: 'TERCERO' }
-					],
-					title: 'C2',
-					placeholder: 'Select one C2'
-				},
-				{
-					id: 'type',
-					type: Types.Options,
-					options: [
-						{ id: '1', title: 'HTTP' },
-						{ id: '2', title: 'HTTPS' }
-					],
-					title: 'Types',
-					placeholder: 'Select one type'
-				}
-			]}
+			name="Launcher"
+			url="http://127.0.0.1:8000/launcher/type"
+			edit
+			deleteRow
+			itemId="id"
+			idInUrl
+			columns={fields}
+			response={{
+				list: (cList) => ({
+					items: cList.results,
+					page: 1,
+					limit: -1,
+					totalDocs: cList.count,
+				}),
+				new: (data, response) => ({ ...data, id: response[0].id }),
+				edit: (data, response) => data,
+			}}
 		/>
-		// <CenteredCard title="TITULO" Right={<span>RIGHT</span>}>
-		// 	<Form
-		// 		fields={[
-		// 			{
-		// 				id: 'c2_id_query',
-		// 				type: Types.Options,
-		// 				options: [
-		// 					{ id: '1', title: 'Empire' },
-		// 					{ id: '2', title: 'OTRO' },
-		// 					{ id: '3', title: 'TERCERO' }
-		// 				],
-		// 				title: 'C2',
-		// 				placeholder: 'Select one C2'
-		// 			},
-		// 			{
-		// 				id: 'type',
-		// 				type: Types.Options,
-		// 				options: [
-		// 					{ id: '1', title: 'HTTP' },
-		// 					{ id: '2', title: 'HTTPS' }
-		// 				],
-		// 				title: 'Types',
-		// 				placeholder: 'Select one type'
-		// 			}
-		// 		]}
-		// 		accept="SIGUIENTE"
-		// 		onSubmit={vals => console.log(vals)}
-		// 	/>
-		// </CenteredCard>
 	)
 }

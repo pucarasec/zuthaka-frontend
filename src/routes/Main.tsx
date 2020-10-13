@@ -11,8 +11,8 @@ export default () => {
 	const routes = createRoutes(() => [
 		{ route: '/', name: 'Dashboard', component: <Home />, show: true },
 		{ route: '/ctwo', name: 'Settings', component: <CTwo />, show: true },
-		{ route: '/launcher', name: 'Launcher', component: <Launcher />, show: true },
-		{ route: '/listener', name: 'Listener', component: <Listener />, show: true }
+		{ route: '/launcher', name: 'Launcher', component: <Launcher />, show: false },
+		{ route: '/listener', name: 'Listener', component: <Listener />, show: true },
 	])
 
 	return (

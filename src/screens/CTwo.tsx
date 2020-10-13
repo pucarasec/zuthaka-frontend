@@ -1,26 +1,88 @@
-import React from 'react'
-import { Crud, Types } from 'material-crud'
-import ItemCTwo from '../components/list/ItemCTwo'
-import { CTwoProps } from '../components/list/ItemCTwo'
-import { english } from '../util/lang'
+import React, { useEffect, useMemo } from 'react'
+import { createFields, Crud, Types, useAxios, useWindowSize } from 'material-crud'
+import { IconButton } from '@material-ui/core'
+import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
 
 export default () => {
+	const { call, response } = useAxios()
+	const { height } = useWindowSize()
+
+	useEffect(() => {
+		call({ url: 'http://127.0.0.1:8000/c2/types/', method: 'GET' })
+	}, [call])
+
+	const fields = useMemo(
+		() =>
+			createFields(() => [
+				{
+					id: 'expand',
+					title: 'Options',
+					type: Types.Input,
+					edit: false,
+					list: {
+						width: 5,
+						cellComponent: ({ rowData, expandRow, isExpanded }) => {
+							return <IconButton onClick={expandRow}>{isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}</IconButton>
+						},
+						content: (rowData) =>
+							!rowData?.options.length ? 'Without options' : rowData?.options.map(({ name, value }: any) => <p key={name}>{`${name} (${value})`}</p>),
+					},
+				},
+				[
+					{
+						id: 'type',
+						title: 'Type',
+						type: Types.Options,
+						placeholder: 'Select one type',
+						options: response?.map(({ name }: any) => ({ id: name })),
+						list: { width: 15 },
+					},
+					{ id: 'creation_date', title: 'Date', type: Types.Input, list: { width: 25 }, edit: false },
+				],
+				{
+					id: 'options',
+					title: 'Options',
+					type: Types.Multiple,
+					configuration: [
+						{ id: 'name', type: Types.Input, title: 'Name' },
+						{ id: 'value', type: Types.Input, title: 'Value' },
+					],
+				},
+			]),
+		[response]
+	)
+
 	return (
 		<Crud
-			lang={english}
-			fields={[
-				{ id: 'equipo', type: Types.Input, title: 'Equipo' },
-				[
-					{ id: 'jugador', type: Types.Input, title: 'Jugador', grow: 6 },
-					{ id: 'numero', type: Types.Number, title: 'Numero', grow: 4 }
-				]
-			]}
 			description="C2 example"
 			name="C2"
-			// url="http://localhost:5050/api/camiseta"
-			renderItem={(props: CTwoProps) => <ItemCTwo {...props} />}
-			onError={err => console.log(err)}
-			onFinished={e => console.log(e)}
+			url="http://127.0.0.1:8000/c2/"
+			height={height - 100}
+			columns={fields}
+			edit
+			deleteRow
+			// rightToolbar={({}) => {
+			// 	return (
+			// 		<IconButton size="small">
+			// 			<FaCheck />
+			// 		</IconButton>
+			// 	)
+			// }}
+			onError={(err) => console.log(err)}
+			onFinished={(e) => console.log(e)}
+			itemId="id"
+			itemName="type"
+			idInUrl
+			response={{
+				list: (cList) => ({
+					items: cList.results,
+					page: 1,
+					limit: -1,
+					totalDocs: cList.count,
+				}),
+				new: (data, response) => ({ ...data, id: response[0].id }),
+				edit: (data, response) => data,
+			}}
 		/>
 	)
 }

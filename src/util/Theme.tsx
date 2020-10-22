@@ -1,10 +1,17 @@
 import { createMuiTheme } from '@material-ui/core'
+import { createContext } from 'react'
 
-export const getTheme = () =>
-	createMuiTheme({
-		typography: {
-			h1: {
-				fontSize: 32
-			}
-		}
-	})
+type ThemeOptions = 'light' | 'dark'
+const ThemeContext = createContext<ThemeOptions>('light')
+
+export const 
+
+export const getTheme = () => {
+  return createMuiTheme({
+    typography: {
+      h1: {
+        fontSize: 32,
+      },
+    },
+  })
+}

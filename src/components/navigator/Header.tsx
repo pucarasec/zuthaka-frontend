@@ -1,8 +1,9 @@
 import React, { memo } from 'react'
-import { AppBar, Toolbar, IconButton, Typography, makeStyles } from '@material-ui/core'
+import { AppBar, Toolbar, IconButton, Typography, makeStyles, Button } from '@material-ui/core'
 import { menuWidth, RoutesProps } from './DrawerMenu'
 import { FaBars, FaUser } from 'react-icons/fa'
 import { useLocation } from 'react-router-dom'
+import { useColorTheme } from '../../util/Theme'
 
 interface Props {
   menu: boolean
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default memo(({ menu, onMenu, routes }: Props) => {
+  const { setColor, color } = useColorTheme()
   const classes = useClasses({ menu })
   const { pathname } = useLocation()
   const actual = routes.find((e) => e.route === pathname)
@@ -24,10 +26,17 @@ export default memo(({ menu, onMenu, routes }: Props) => {
         <Typography variant="h6" className={classes.title}>
           {`${actual?.name || 'Sukhata'}`}
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={() => console.log('logout')}>
-          <FaUser />
+        <Button
+          onClick={() => {
+            setColor(color === 'dark' ? 'light' : 'dark')
+          }}
+          color="inherit"
+          startIcon={<FaUser />}>
+          {`${color === 'dark' ? 'Light' : 'Dark'} Mode`}
+        </Button>
+        <Button onClick={() => {}} color="inherit" startIcon={<FaUser />}>
           User
-        </IconButton>
+        </Button>
       </Toolbar>
     </AppBar>
   )

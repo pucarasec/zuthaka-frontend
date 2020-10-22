@@ -2,10 +2,12 @@ import React, { useEffect, useMemo } from 'react'
 import { createFields, Crud, Types, useAxios, useWindowSize } from 'material-crud'
 import { IconButton } from '@material-ui/core'
 import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
+import { useSnackbar } from 'notistack'
 
 export default () => {
   const { call, response } = useAxios()
   const { height } = useWindowSize()
+  const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
     call({ url: 'http://127.0.0.1:8000/c2/types/', method: 'GET' })
@@ -21,7 +23,7 @@ export default () => {
           edit: false,
           list: {
             width: 5,
-            cellComponent: ({ rowData, expandRow, isExpanded }) => {
+            cellComponent: ({ expandRow, isExpanded }) => {
               return (
                 <IconButton onClick={expandRow}>
                   {isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
@@ -42,7 +44,7 @@ export default () => {
             title: 'Type',
             type: Types.Options,
             placeholder: 'Select one type',
-            options: response?.map(({ name }: any) => ({ id: name })),
+            options: response?.results?.map(({ name, id }: any) => ({ id: name, title: name })),
             list: { width: 15 },
           },
           {
@@ -73,8 +75,11 @@ export default () => {
       url="http://127.0.0.1:8000/c2/"
       height={height - 100}
       columns={fields}
-      edit
-      deleteRow
+      actions={{
+        new: true,
+        edit: true,
+        delete: true,
+      }}
       // rightToolbar={({}) => {
       // 	return (
       // 		<IconButton size="small">
@@ -82,8 +87,13 @@ export default () => {
       // 		</IconButton>
       // 	)
       // }}
-      onError={(err) => console.log(err)}
-      onFinished={(e) => console.log(e)}
+      onError={(err) => enqueueSnackbar(`An error ocurred`, { variant: 'error' })}
+      onFinished={(e) => {
+        const message = `c2 ${
+          e === 'delete' ? 'deleted' : e === 'new' ? 'added' : 'edited'
+        } successfully`
+        enqueueSnackbar(message, { variant: 'success' })
+      }}
       itemId="id"
       itemName="type"
       idInUrl
@@ -94,8 +104,8 @@ export default () => {
           limit: -1,
           totalDocs: cList.count,
         }),
-        new: (data, response) => ({ ...data, id: response[0].id }),
-        edit: (data, response) => data,
+        new: (data, response) => response,
+        edit: (data, response) => response,
       }}
     />
   )

@@ -2,26 +2,14 @@ import React from 'react'
 import Main from './routes/Main'
 import { SnackbarProvider } from 'notistack'
 import { createMuiTheme, ThemeProvider, useMediaQuery } from '@material-ui/core'
-import { getTheme } from './util/Theme'
+import { getTheme, useColorTheme } from './util/Theme'
 import { CrudProvider, enUS } from 'material-crud'
 import { cyan, purple } from '@material-ui/core/colors'
 
 export default () => {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
-  console.log(prefersDarkMode)
-  const theme = React.useMemo(
-    () =>
-      createMuiTheme({
-        palette: {
-          primary: cyan,
-          type: 'dark',
-        },
-      }),
-    [],
-  )
-
+  const { color } = useColorTheme()
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={getTheme(color)}>
       <SnackbarProvider maxSnack={3}>
         <CrudProvider lang={enUS}>
           <Main />

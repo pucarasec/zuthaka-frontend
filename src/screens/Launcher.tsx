@@ -43,8 +43,11 @@ export default () => {
       description="Launcher"
       name="Launcher"
       url="http://127.0.0.1:8000/launcher/type"
-      edit
-      deleteRow
+      actions={{
+        new: true,
+        edit: true,
+        delete: true,
+      }}
       itemId="id"
       idInUrl
       columns={fields}

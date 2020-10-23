@@ -15,7 +15,7 @@
 		"@types/react-dom": "^16.9.0",
 		"@types/react-icons": "^3.0.0",
 		"formik": "^2.1.5",
-		"material-crud": "https://github.com/julianlionti/material-crud.git#finalUrl",
+		"material-crud": "https://github.com/julianlionti/material-crud.git",
 		"notistack": "^1.0.0",
 		"react": "^16.13.1",
 		"react-custom-scrollbars": "^4.2.1",
@@ -24,7 +24,7 @@
 		"react-lottie": "^1.2.3",
 		"react-router-dom": "^5.2.0",
 		"react-scripts": "3.4.3",
-		"typescript": "^4.0.3",
+		"typescript": "^3.9.7",
 		"yup": "^0.29.3"
 	},
 	"scripts": {

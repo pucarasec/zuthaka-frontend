@@ -1,5 +1,5 @@
 import React from 'react'
 
 export default () => {
-	return <span>DASHBOARD</span>
+  return <span>DASHBOARD</span>
 }

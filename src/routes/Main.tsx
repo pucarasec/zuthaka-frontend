@@ -1,43 +1,55 @@
-import React, { Suspense } from 'react'
-import { CircularProgress } from '@material-ui/core'
-import { Switch, Route, BrowserRouter } from 'react-router-dom'
-import Container, { createRoutes } from '../components/navigator/Container'
+import React, { useCallback } from 'react'
+import { createMenu, createRoutes, createUserMenu, Navigator } from 'material-navigator'
 import Home from '../screens/Home'
 import Launcher from '../screens/Launcher'
 import Listener from '../screens/Listener'
 import CTwo from '../screens/CTwo'
+import { FaMoon, FaSignOutAlt, FaSun } from 'react-icons/fa'
+import { useColorTheme } from '../util/Theme'
 
 export default () => {
-  const routes = createRoutes(() => [
-    { route: '/', name: 'Dashboard', component: <Home />, show: true },
-    { route: '/ctwo', name: 'Settings', component: <CTwo />, show: true },
+  const { setColor, color } = useColorTheme()
+
+  const routes = createRoutes([
+    { route: '/', component: <Home /> },
+    { route: '/ctwo', component: <CTwo /> },
+    { route: '/listener', component: <Listener /> },
+    { route: '/launcher', component: <Launcher />, hidden: true },
+  ])
+
+  const menu = createMenu([
+    { title: 'Dashboard', route: '/' },
+    { title: 'C2', route: '/ctwo' },
+    { title: 'Listener', route: '/listener' },
+    { title: 'Launcher', route: '/launcher', hidden: true },
+  ])
+
+  const userMenu = createUserMenu([
     {
-      route: '/launcher',
-      name: 'Launcher',
-      component: <Launcher />,
-      show: false,
-    },
-    {
-      route: '/listener',
-      name: 'Listener',
-      component: <Listener />,
-      show: true,
+      id: 'logout',
+      title: 'Log out',
+      icon: <FaSignOutAlt />,
+      onClick: () => console.log('LOGOUT'),
     },
   ])
 
+  // const changeTheme = () => setColor(color === 'dark' ? 'light' : 'dark')
+
+  console.log(color)
   return (
-    <BrowserRouter>
-      <Container routes={routes}>
-        <Switch>
-          <Suspense fallback={<CircularProgress />}>
-            {routes.map(({ route, component, exact }) => (
-              <Route key={route} path={route} exact={exact || route === '/'}>
-                {component}
-              </Route>
-            ))}
-          </Suspense>
-        </Switch>
-      </Container>
-    </BrowserRouter>
+    <Navigator
+      menu={menu}
+      routes={routes}
+      config={{ title: 'Suthaka', showUser: true }}
+      userMenu={userMenu}
+      extraIcons={[
+        {
+          id: 'sun',
+          icon: color === 'dark' ? <FaSun /> : <FaMoon />,
+          tooltip: 'Change dark/light theme',
+          onClick: () => setColor(color === 'dark' ? 'light' : 'dark'),
+        },
+      ]}
+    />
   )
 }

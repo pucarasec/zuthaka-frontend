@@ -1,5 +1,13 @@
 import React, { useEffect, useMemo } from 'react'
-import { createFields, Crud, Types, useAxios, useWindowSize } from 'material-crud'
+import {
+  createColumns,
+  createFields,
+  Crud,
+  FormTypes,
+  TableTypes,
+  useAxios,
+  useWindowSize,
+} from 'material-crud'
 import { IconButton } from '@material-ui/core'
 import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
 import { useSnackbar } from 'notistack'
@@ -13,55 +21,59 @@ export default () => {
     call({ url: 'http://127.0.0.1:8000/c2/types/', method: 'GET' })
   }, [call])
 
-  const fields = useMemo(
+  const columns = useMemo(
     () =>
-      createFields(() => [
+      createColumns([
         {
           id: 'expand',
           title: 'Options',
-          type: Types.Input,
-          edit: false,
-          list: {
-            width: 5,
-            cellComponent: ({ expandRow, isExpanded }) => {
-              return (
-                <IconButton onClick={expandRow}>
-                  {isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
-                </IconButton>
-              )
-            },
-            content: (rowData) =>
-              !rowData?.options.length
-                ? 'Without options'
-                : rowData?.options.map(({ name, value }: any) => (
-                    <p key={name}>{`${name} (${value})`}</p>
-                  )),
+          type: TableTypes.Custom,
+          height: 50,
+          cellComponent: ({ expandRow, isExpanded }) => {
+            return (
+              <IconButton onClick={expandRow}>
+                {isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
+              </IconButton>
+            )
           },
+          content: (rowData) =>
+            !rowData?.options.length
+              ? 'Without options'
+              : rowData?.options.map(({ name, value }: any) => (
+                  <p key={name}>{`${name} (${value})`}</p>
+                )),
         },
-        [
-          {
-            id: 'type',
-            title: 'Type',
-            type: Types.Options,
-            placeholder: 'Select one type',
-            options: response?.results?.map(({ name, id }: any) => ({ id: name, title: name })),
-            list: { width: 15 },
-          },
-          {
-            id: 'creation_date',
-            title: 'Date',
-            type: Types.Input,
-            list: { width: 25 },
-            edit: false,
-          },
-        ],
+        {
+          id: 'type',
+          title: 'Type',
+          type: TableTypes.String,
+        },
+        {
+          id: 'creation_date',
+          title: 'Date',
+          type: TableTypes.String,
+        },
+      ]),
+    [],
+  )
+
+  const fields = useMemo(
+    () =>
+      createFields([
+        {
+          id: 'type',
+          title: 'Type',
+          type: FormTypes.Options,
+          placeholder: 'Select one type',
+          options: response?.results?.map(({ name, id }: any) => ({ id: name, title: name })) || [],
+        },
         {
           id: 'options',
           title: 'Options',
-          type: Types.Multiple,
+          type: FormTypes.Multiple,
           configuration: [
-            { id: 'name', type: Types.Input, title: 'Name' },
-            { id: 'value', type: Types.Input, title: 'Value' },
+            { id: 'name', type: FormTypes.Input, title: 'Name' },
+            { id: 'value', type: FormTypes.Input, title: 'Value' },
           ],
         },
       ]),
@@ -73,13 +85,10 @@ export default () => {
       description="C2 example"
       name="C2"
       url="http://127.0.0.1:8000/c2/"
-      height={height - 100}
-      columns={fields}
-      actions={{
-        new: true,
-        edit: true,
-        delete: true,
-      }}
+      height={height - 200}
+      columns={columns}
+      fields={fields}
+      actions={{ edit: true, delete: true }}
       // rightToolbar={({}) => {
       // 	return (
       // 		<IconButton size="small">

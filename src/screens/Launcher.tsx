@@ -1,6 +1,7 @@
 import React from 'react'
 import { Crud, createFields, useWindowSize } from 'material-crud'
 import { makeStyles } from '@material-ui/core'
+import Urls from '../util/Urls'
 
 interface LauncherProps {
   id: string
@@ -39,38 +40,30 @@ export default () => {
   const { height } = useWindowSize()
   const classes = useClasses()
 
-  return (
-    <div>
-      <label className={classes.switch}>
-        <input type="checkbox" />
-        <span className={classes.switch}></span>
-      </label>
-    </div>
-    // <Crud
-    //   height={height}
-    //   description="Launcher"
-    //   name="Launcher"
-    //   url="http://127.0.0.1:8000/launcher/type"
-    //   actions={{
-    //     new: true,
-    //     edit: true,
-    //     delete: true,
-    //   }}
-    //   itemId="id"
-    //   idInUrl
-    //   columns={fields}
-    //   response={{
-    //     list: (cList) => ({
-    //       items: cList.results,
-    //       page: 1,
-    //       limit: -1,
-    //       totalDocs: cList.count,
-    //     }),
-    //     new: (data, response) => ({ ...data, id: response[0].id }),
-    //     edit: (data, response) => data,
-    //   }}
-    // />
-  )
+  return null
+  // <Crud
+  //   height={height}
+  //   description="Launcher"
+  //   name="Launcher"
+  //   url={Urls.launcher}
+  //   actions={{
+  //     edit: true,
+  //     delete: true,
+  //   }}
+  //   itemId="id"
+  //   idInUrl
+  //   // columns={fields}
+  //   response={{
+  //     list: (cList) => ({
+  //       items: cList.results,
+  //       page: 1,
+  //       limit: -1,
+  //       totalDocs: cList.count,
+  //     }),
+  //     new: (data, response) => ({ ...data, id: response[0].id }),
+  //     edit: (data, response) => data,
+  //   }}
+  // />
 }
 
 const useClasses = makeStyles({

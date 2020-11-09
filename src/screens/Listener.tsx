@@ -14,6 +14,7 @@ import { IconButton, Tooltip } from '@material-ui/core'
 import { AiOutlinePushpin, AiFillPushpin } from 'react-icons/ai'
 import { usePins } from '../hooks/usePins'
 import { crudInteractions } from '../util/CrudConfig'
+import Urls from '../util/Urls'
 
 interface ListenerProps {
   id: number
@@ -28,7 +29,7 @@ const PinTop = memo(({ id }: any) => {
   useEffect(() => {
     const getListener = async () => {
       const { response } = await callWs<any>({
-        url: `http://127.0.0.1:8000/listeners/${id}`,
+        url: `${Urls.listeners}/${id}`,
         method: 'GET',
       })
       setListener(response)
@@ -55,7 +56,7 @@ export default () => {
   useEffect(() => {
     const getTypes = async () => {
       const { response } = await callWs<any>({
-        url: 'http://127.0.0.1:8000/listeners/types/',
+        url: Urls.listeners_types,
         method: 'GET',
       })
       if (response?.results) setTypes(response?.results)
@@ -63,7 +64,7 @@ export default () => {
     getTypes()
     const getC2 = async () => {
       const { response } = await callWs<any>({
-        url: 'http://127.0.0.1:8000/c2/',
+        url: Urls.c2,
         method: 'GET',
       })
       if (response?.results) setC2(response?.results)
@@ -171,7 +172,7 @@ export default () => {
         filters={filters}
         description="Listener"
         name="Listener"
-        url="http://127.0.0.1:8000/listeners/"
+        url={Urls.listeners}
         actions={{ edit: true, delete: true }}
         itemId="id"
         idInUrl

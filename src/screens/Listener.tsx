@@ -2,14 +2,15 @@ import React, { useEffect, useMemo } from 'react'
 import { createFields, Crud, Types, useAxios, useWindowSize } from 'material-crud'
 import { IconButton } from '@material-ui/core'
 import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
+import Urls from '../util/Urls'
 
 export default () => {
   const { call, response } = useAxios()
   const { height } = useWindowSize()
 
   useEffect(() => {
-    call({ url: 'http://127.0.0.1:8000/listeners/types/', method: 'GET' })
-    call({ url: 'http://127.0.0.1:8000/c2/', method: 'GET' })
+    call({ url: Urls.listeners_types, method: 'GET' })
+    call({ url: Urls.c2, method: 'GET' })
   }, [call])
 
   const fields = useMemo(
@@ -76,14 +77,14 @@ export default () => {
       ]),
     [response],
   )
-
+  console.log(Urls.listeners_types)
   return (
     <Crud
-      height={height}
+      height={height - 190}
       columns={fields}
       description="Listener"
       name="Listener"
-      url="http://127.0.0.1:8000/listeners/"
+      url={Urls.listeners}
       actions={{
         new: true,
         edit: true,

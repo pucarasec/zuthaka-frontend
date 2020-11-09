@@ -1,5 +1,6 @@
 import React from 'react'
 import { Crud, Types, createFields, useWindowSize } from 'material-crud'
+import Urls from '../util/Urls'
 
 interface LauncherProps {
   id: string
@@ -39,10 +40,10 @@ export default () => {
 
   return (
     <Crud
-      height={height}
+      height={height - 190}
       description="Launcher"
       name="Launcher"
-      url="http://127.0.0.1:8000/launcher/type"
+      url={Urls.launcher_type}
       actions={{
         new: true,
         edit: true,

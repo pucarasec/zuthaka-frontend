@@ -3,6 +3,7 @@ import { createFields, Crud, Types, useAxios, useWindowSize } from 'material-cru
 import { IconButton } from '@material-ui/core'
 import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
 import { useSnackbar } from 'notistack'
+import Urls from '../util/Urls'
 
 export default () => {
   const { call, response } = useAxios()
@@ -10,7 +11,7 @@ export default () => {
   const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
-    call({ url: 'http://127.0.0.1:8000/c2/types/', method: 'GET' })
+    call({ url: Urls.c2_types, method: 'GET' })
   }, [call])
 
   const fields = useMemo(
@@ -72,8 +73,8 @@ export default () => {
     <Crud
       description="C2 example"
       name="C2"
-      url="http://127.0.0.1:8000/c2/"
-      height={height - 100}
+      url={Urls.c2}
+      height={height - 190}
       columns={fields}
       actions={{
         new: true,

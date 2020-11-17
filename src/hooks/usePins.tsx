@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
-export const usePins = (name: string) => {
+export default (name: string) => {
   const getPins = useMemo(() => {
     const pins = localStorage.getItem(name)
     if (!pins) return []

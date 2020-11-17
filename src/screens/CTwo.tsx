@@ -8,15 +8,21 @@ import {
   useAxios,
   useWindowSize,
 } from 'material-crud'
-import { IconButton } from '@material-ui/core'
-import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
-import { useSnackbar } from 'notistack'
+import { IconButton, Tooltip } from '@material-ui/core'
+import { FaChevronCircleDown, FaChevronCircleUp, FaEye } from 'react-icons/fa'
 import Urls from '../util/Urls'
+import { crudResponse, crudInteractions } from '../util/CrudConfig'
+import { useNavigatorConfig } from 'material-navigator'
+import { useHistory } from 'react-router-dom'
+import { crudError, crudFinised } from '../util/addOns'
+import { useSnackbar } from 'notistack'
 
 export default () => {
+  useNavigatorConfig({ title: 'Settings - C2' })
+  const { push } = useHistory()
+  const { enqueueSnackbar } = useSnackbar()
   const { call, response } = useAxios()
   const { height } = useWindowSize()
-  const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
     call({ url: Urls.c2_types, method: 'GET' })
@@ -29,7 +35,7 @@ export default () => {
           id: 'expand',
           title: 'Options',
           type: TableTypes.Custom,
-          height: 50,
+          height: 70,
           cellComponent: ({ expandRow, isExpanded }) => {
             return (
               <IconButton onClick={expandRow}>
@@ -41,7 +47,7 @@ export default () => {
             !rowData?.options.length
               ? 'Without options'
               : rowData?.options.map(({ name, value }: any) => (
-                  <p key={name}>{`${name} (${value})`}</p>
+                  <span key={name}>{`${name} (${value})`}</span>
                 )),
         },
         {
@@ -66,7 +72,7 @@ export default () => {
           title: 'Type',
           type: FormTypes.Options,
           placeholder: 'Select one type',
-          options: response?.results?.map(({ name, id }: any) => ({ id: name, title: name })) || [],
+          options: response?.results?.map(({ name }: any) => ({ id: name })) || [],
         },
         {
           id: 'options',
@@ -90,6 +96,15 @@ export default () => {
       columns={columns}
       fields={fields}
       actions={{ edit: true, delete: true }}
+      extraActions={(rowData) => {
+        return [
+          <Tooltip title="Go to listeners" key={rowData.id}>
+            <IconButton onClick={() => push('/listener', { c2_id: rowData.id })}>
+              <FaEye />
+            </IconButton>
+          </Tooltip>,
+        ]
+      }}
       // rightToolbar={({}) => {
       // 	return (
       // 		<IconButton size="small">
@@ -97,26 +112,14 @@ export default () => {
       // 		</IconButton>
       // 	)
       // }}
-      onError={(err) => enqueueSnackbar(`An error ocurred`, { variant: 'error' })}
-      onFinished={(e) => {
-        const message = `c2 ${
-          e === 'delete' ? 'deleted' : e === 'new' ? 'added' : 'edited'
-        } successfully`
-        enqueueSnackbar(message, { variant: 'success' })
-      }}
+      onError={crudError(enqueueSnackbar)}
+      onFinished={crudFinised(enqueueSnackbar, 'C2')}
       itemId="id"
       itemName="type"
       idInUrl
-      response={{
-        list: (cList) => ({
-          items: cList.results,
-          page: 1,
-          limit: -1,
-          totalDocs: cList.count,
-        }),
-        new: (data, response) => response,
-        edit: (data, response) => response,
-      }}
+      response={crudResponse}
+      interaction={crudInteractions}
+      // transformToEdit={(rowData) => ({ ...rowData, type: rowData.type })}
     />
   )
 }

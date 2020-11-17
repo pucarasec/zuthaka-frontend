@@ -14,14 +14,14 @@ export default () => {
     { route: '/', component: <Home /> },
     { route: '/ctwo', component: <CTwo /> },
     { route: '/listener', component: <Listener /> },
-    { route: '/launcher', component: <Launcher />, hidden: true },
+    { route: '/launcher', component: <Launcher /> },
   ])
 
   const menu = createMenu([
     { title: 'Dashboard', route: '/' },
     { title: 'C2', route: '/ctwo' },
     { title: 'Listener', route: '/listener' },
-    { title: 'Launcher', route: '/launcher', hidden: true },
+    { title: 'Launcher', route: '/launcher' },
   ])
 
   const userMenu = createUserMenu([
@@ -35,7 +35,6 @@ export default () => {
 
   // const changeTheme = () => setColor(color === 'dark' ? 'light' : 'dark')
 
-  console.log(color)
   return (
     <Navigator
       menu={menu}

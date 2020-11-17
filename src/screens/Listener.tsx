@@ -9,12 +9,13 @@ import {
   TableTypes,
   useWindowSize,
 } from 'material-crud'
-import queryString from 'query-string'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { AiOutlinePushpin, AiFillPushpin } from 'react-icons/ai'
-import { usePins } from '../hooks/usePins'
-import { crudInteractions } from '../util/CrudConfig'
+import usePins from '../hooks/usePins'
+import { crudInteractions, crudResponse } from '../util/CrudConfig'
 import Urls from '../util/Urls'
+import { useLocation } from 'react-router-dom'
+import { FaChevronCircleDown, FaChevronCircleUp, FaRegBookmark } from 'react-icons/fa'
 
 interface ListenerProps {
   id: number
@@ -38,7 +39,7 @@ const PinTop = memo(({ id }: any) => {
   }, [id])
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+    <div style={{ display: 'flex' }}>
       <span>ID: {listener?.id}</span>
       <span>C2_ID: {listener?.c2_id}</span>
       <span>Type: {listener?.type}</span>
@@ -49,6 +50,7 @@ const PinTop = memo(({ id }: any) => {
 
 export default () => {
   const { height } = useWindowSize()
+  const { state } = useLocation()
   const [types, setTypes] = useState<any[]>([])
   const [c2, setC2] = useState<any[]>([])
   const { pins, savePins, removePins } = usePins('listener')
@@ -72,9 +74,34 @@ export default () => {
     getC2()
   }, [])
 
+  useEffect(() => {
+    console.log(state)
+    if (state) {
+    }
+  }, [state])
+
   const columns = useMemo(
     () =>
       createColumns([
+        {
+          id: 'options',
+          title: 'Options',
+          type: TableTypes.Custom,
+          height: 100,
+          cellComponent: ({ expandRow, isExpanded }) => (
+            <IconButton onClick={expandRow}>
+              {isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
+            </IconButton>
+          ),
+          content: (rowData) =>
+            !rowData?.options.length
+              ? 'No rows'
+              : rowData?.options.map(({ name, value }: any) => (
+                  <span key={name}>
+                    {name} ({value})
+                  </span>
+                )),
+        },
         {
           id: 'id',
           type: TableTypes.String,
@@ -99,14 +126,6 @@ export default () => {
           type: TableTypes.String,
           title: 'Type',
           width: 3,
-          cellComponent: ({ rowData }) =>
-            !rowData?.options.length
-              ? 'No rows'
-              : rowData?.options.map(({ name, value }: any) => (
-                  <p key={name}>
-                    {name} ({value})
-                  </p>
-                )),
         },
       ]),
     [c2],
@@ -142,7 +161,7 @@ export default () => {
           type: FormTypes.Options,
           title: 'Type',
           validate: Yup.string().required(),
-          options: types.map(({ name, id }: any) => ({ id: name, title: name })),
+          options: types.map(({ name }: any) => ({ id: name })),
           placeholder: 'Select one type',
         },
         {
@@ -160,11 +179,20 @@ export default () => {
 
   return (
     <React.Fragment>
-      <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-        {pins.map((id) => (
-          <PinTop key={id} id={id} />
-        ))}
-      </div>
+      {pins.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginLeft: 100,
+            marginRight: 100,
+            marginBottom: 30,
+          }}>
+          {pins.map((id) => (
+            <PinTop key={id} id={id} />
+          ))}
+        </div>
+      )}
       <Crud
         height={height - 250}
         columns={columns}
@@ -179,7 +207,7 @@ export default () => {
         extraActions={(rowData: any) => {
           const isMarked = pins.includes(rowData.id)
           return [
-            <Tooltip title="Pin to top">
+            <Tooltip title="Pin to top" key={rowData.id}>
               <IconButton
                 onClick={() => (isMarked ? removePins(rowData.id) : savePins(rowData.id))}>
                 {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
@@ -188,36 +216,12 @@ export default () => {
           ]
         }}
         // showSelecting
-        // rightToolbar={({ rowsSelected }) => (
-        //   <IconButton onClick={() => savePins(rowsSelected.map(({ id }) => id))}>
-        //     <FaRegBookmark />
-        //   </IconButton>
-        // )}
-        response={{
-          list: (cList) => {
-            const query = queryString.parse(
-              cList.next?.substring(cList.next.indexOf('?'), cList.next.length),
-            )
-            console.log(cList)
-            return {
-              items: cList.results,
-              page: !query.offset
-                ? 0
-                : Math.floor(cList.count / parseInt(query.offset.toString())) - 1,
-              limit: query.limit ? parseInt(query.limit.toString()) : 10,
-              totalDocs: cList.count,
-              hasNextPage: cList.next !== null,
-            }
-          },
-          new: (data, _) => data,
-          edit: (data, _) => data,
-        }}
-        transform={(what, rowData) => {
-          if (what === 'query') {
-            return { ...rowData, offset: rowData.offset > 0 ? rowData.offset - 1 : 0 }
-          }
-          return rowData
-        }}
+        rightToolbar={({ rowsSelected }) => (
+          <IconButton onClick={() => savePins(rowsSelected.map(({ id }) => id))}>
+            <FaRegBookmark />
+          </IconButton>
+        )}
+        response={crudResponse}
         interaction={crudInteractions}
       />
     </React.Fragment>

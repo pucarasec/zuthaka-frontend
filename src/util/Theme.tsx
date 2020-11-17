@@ -25,10 +25,13 @@ export const ColorThemeProvider = ({ children }: { children: ReactNode }) => {
 export const useColorTheme = () => {
   const [color, setColor] = useContext(ThemeContext)
 
-  const setColorCallack = useCallback((color: ThemeOptions) => {
-    setColor(color)
-    localStorage.setItem('theme', color)
-  }, [])
+  const setColorCallack = useCallback(
+    (color: ThemeOptions) => {
+      setColor(color)
+      localStorage.setItem('theme', color)
+    },
+    [setColor],
+  )
   return { setColor: setColorCallack, color }
 }
 

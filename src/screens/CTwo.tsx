@@ -1,68 +1,86 @@
 import React, { useEffect, useMemo } from 'react'
-import { createFields, Crud, Types, useAxios, useWindowSize } from 'material-crud'
-import { IconButton } from '@material-ui/core'
-import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
-import { useSnackbar } from 'notistack'
+import {
+  createColumns,
+  createFields,
+  Crud,
+  FormTypes,
+  TableTypes,
+  useAxios,
+  useWindowSize,
+} from 'material-crud'
+import { IconButton, Tooltip } from '@material-ui/core'
+import { FaChevronCircleDown, FaChevronCircleUp, FaEye } from 'react-icons/fa'
 import Urls from '../util/Urls'
+import { crudResponse, crudInteractions } from '../util/CrudConfig'
+import { useNavigatorConfig } from 'material-navigator'
+import { useHistory } from 'react-router-dom'
+import { crudError, crudFinised } from '../util/addOns'
+import { useSnackbar } from 'notistack'
 
 export default () => {
+  useNavigatorConfig({ title: 'Settings - C2' })
+  const { push } = useHistory()
+  const { enqueueSnackbar } = useSnackbar()
   const { call, response } = useAxios()
   const { height } = useWindowSize()
-  const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
     call({ url: Urls.c2_types, method: 'GET' })
   }, [call])
 
-  const fields = useMemo(
+  const columns = useMemo(
     () =>
-      createFields(() => [
+      createColumns([
         {
           id: 'expand',
           title: 'Options',
-          type: Types.Input,
-          edit: false,
-          list: {
-            width: 5,
-            cellComponent: ({ expandRow, isExpanded }) => {
-              return (
-                <IconButton onClick={expandRow}>
-                  {isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
-                </IconButton>
-              )
-            },
-            content: (rowData) =>
-              !rowData?.options.length
-                ? 'Without options'
-                : rowData?.options.map(({ name, value }: any) => (
-                    <p key={name}>{`${name} (${value})`}</p>
-                  )),
+          type: TableTypes.Custom,
+          height: 70,
+          cellComponent: ({ expandRow, isExpanded }) => {
+            return (
+              <IconButton onClick={expandRow}>
+                {isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
+              </IconButton>
+            )
           },
+          content: (rowData) =>
+            !rowData?.options.length
+              ? 'Without options'
+              : rowData?.options.map(({ name, value }: any) => (
+                  <span key={name}>{`${name} (${value})`}</span>
+                )),
         },
-        [
-          {
-            id: 'type',
-            title: 'Type',
-            type: Types.Options,
-            placeholder: 'Select one type',
-            options: response?.results?.map(({ name, id }: any) => ({ id: name, title: name })),
-            list: { width: 15 },
-          },
-          {
-            id: 'creation_date',
-            title: 'Date',
-            type: Types.Input,
-            list: { width: 25 },
-            edit: false,
-          },
-        ],
+        {
+          id: 'type',
+          title: 'Type',
+          type: TableTypes.String,
+        },
+        {
+          id: 'creation_date',
+          title: 'Date',
+          type: TableTypes.String,
+        },
+      ]),
+    [],
+  )
+
+  const fields = useMemo(
+    () =>
+      createFields([
+        {
+          id: 'type',
+          title: 'Type',
+          type: FormTypes.Options,
+          placeholder: 'Select one type',
+          options: response?.results?.map(({ name }: any) => ({ id: name })) || [],
+        },
         {
           id: 'options',
           title: 'Options',
-          type: Types.Multiple,
+          type: FormTypes.Multiple,
           configuration: [
-            { id: 'name', type: Types.Input, title: 'Name' },
-            { id: 'value', type: Types.Input, title: 'Value' },
+            { id: 'name', type: FormTypes.Input, title: 'Name' },
+            { id: 'value', type: FormTypes.Input, title: 'Value' },
           ],
         },
       ]),
@@ -74,12 +92,18 @@ export default () => {
       description="C2 example"
       name="C2"
       url={Urls.c2}
-      height={height - 190}
-      columns={fields}
-      actions={{
-        new: true,
-        edit: true,
-        delete: true,
+      height={height - 200}
+      columns={columns}
+      fields={fields}
+      actions={{ edit: true, delete: true }}
+      extraActions={(rowData) => {
+        return [
+          <Tooltip title="Go to listeners" key={rowData.id}>
+            <IconButton onClick={() => push('/listener', { c2_id: rowData.id })}>
+              <FaEye />
+            </IconButton>
+          </Tooltip>,
+        ]
       }}
       // rightToolbar={({}) => {
       // 	return (
@@ -88,26 +112,14 @@ export default () => {
       // 		</IconButton>
       // 	)
       // }}
-      onError={(err) => enqueueSnackbar(`An error ocurred`, { variant: 'error' })}
-      onFinished={(e) => {
-        const message = `c2 ${
-          e === 'delete' ? 'deleted' : e === 'new' ? 'added' : 'edited'
-        } successfully`
-        enqueueSnackbar(message, { variant: 'success' })
-      }}
+      onError={crudError(enqueueSnackbar)}
+      onFinished={crudFinised(enqueueSnackbar, 'C2')}
       itemId="id"
       itemName="type"
       idInUrl
-      response={{
-        list: (cList) => ({
-          items: cList.results,
-          page: 1,
-          limit: -1,
-          totalDocs: cList.count,
-        }),
-        new: (data, response) => response,
-        edit: (data, response) => response,
-      }}
+      response={crudResponse}
+      interaction={crudInteractions}
+      // transformToEdit={(rowData) => ({ ...rowData, type: rowData.type })}
     />
   )
 }

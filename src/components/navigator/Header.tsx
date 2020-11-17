@@ -1,7 +1,15 @@
 import React, { memo } from 'react'
-import { AppBar, Toolbar, IconButton, Typography, makeStyles, Button } from '@material-ui/core'
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  makeStyles,
+  Button,
+  Switch,
+} from '@material-ui/core'
 import { menuWidth, RoutesProps } from './DrawerMenu'
-import { FaBars, FaUser } from 'react-icons/fa'
+import { FaBars, FaMoon, FaSun, FaUser } from 'react-icons/fa'
 import { useLocation } from 'react-router-dom'
 import { useColorTheme } from '../../util/Theme'
 
@@ -26,14 +34,22 @@ export default memo(({ menu, onMenu, routes }: Props) => {
         <Typography variant="h6" className={classes.title}>
           {`${actual?.name || 'Sukhata'}`}
         </Typography>
-        <Button
+        <Switch
+          checkedIcon={<FaSun color="white" size={20} />}
+          icon={<FaMoon color="white" size={20} />}
+          color="default"
+          checked={color === 'light'}
+          style={{ height: 30 }}
+          onChange={() => setColor(color === 'dark' ? 'light' : 'dark')}
+        />
+        {/* <Button
           onClick={() => {
             setColor(color === 'dark' ? 'light' : 'dark')
           }}
           color="inherit"
           startIcon={<FaUser />}>
           {`${color === 'dark' ? 'Light' : 'Dark'} Mode`}
-        </Button>
+        </Button> */}
         <Button onClick={() => {}} color="inherit" startIcon={<FaUser />}>
           User
         </Button>

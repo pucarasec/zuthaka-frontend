@@ -4,6 +4,7 @@ import React, {
   SetStateAction,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from 'react'
 import { createMuiTheme } from '@material-ui/core'
@@ -18,21 +19,25 @@ export const ColorThemeProvider = ({ children }: { children: ReactNode }) => {
   const state = useState<ThemeOptions>(
     () => (localStorage.getItem('theme') as ThemeOptions) || 'light',
   )
-
   return <ThemeContext.Provider value={state}>{children}</ThemeContext.Provider>
 }
 
 export const useColorTheme = () => {
   const [color, setColor] = useContext(ThemeContext)
 
-  const setColorCallack = useCallback(
-    (color: ThemeOptions) => {
-      setColor(color)
-      localStorage.setItem('theme', color)
-    },
-    [setColor],
-  )
-  return { setColor: setColorCallack, color }
+  useEffect(() => {
+    localStorage.setItem('theme', color)
+  }, [color])
+
+  // console.log(color)
+  // const setColorCallack = useCallback(
+  //   (color: ThemeOptions) => {
+  //     setColor(color)
+  //     localStorage.setItem('theme', color)
+  //   },
+  //   [setColor],
+  // )
+  return { setColor, color }
 }
 
 export const getTheme = (color: ThemeOptions) => {

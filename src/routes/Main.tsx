@@ -6,6 +6,7 @@ import Listener from '../screens/Listener'
 import CTwo from '../screens/CTwo'
 import { FaMoon, FaSignOutAlt, FaSun } from 'react-icons/fa'
 import { useColorTheme } from '../util/Theme'
+import Agents from '../screens/Agents'
 
 export default () => {
   const { setColor, color } = useColorTheme()
@@ -15,6 +16,7 @@ export default () => {
     { route: '/ctwo', component: <CTwo /> },
     { route: '/listener', component: <Listener /> },
     { route: '/launcher', component: <Launcher /> },
+    { route: '/agents', component: <Agents /> },
   ])
 
   const menu = createMenu([
@@ -22,6 +24,7 @@ export default () => {
     { title: 'C2', route: '/ctwo' },
     { title: 'Listener', route: '/listener' },
     { title: 'Launcher', route: '/launcher' },
+    { title: 'Agents', route: '/agents' },
   ])
 
   const userMenu = createUserMenu([
@@ -46,7 +49,9 @@ export default () => {
           id: 'sun',
           icon: color === 'dark' ? <FaSun /> : <FaMoon />,
           tooltip: 'Change dark/light theme',
-          onClick: () => setColor(color === 'dark' ? 'light' : 'dark'),
+          onClick: () => {
+            setColor((color) => (color === 'dark' ? 'light' : 'dark'))
+          },
         },
       ]}
     />

@@ -10,7 +10,7 @@ import Agents from '../screens/Agents'
 
 export default () => {
   const { setColor, color } = useColorTheme()
-
+  
   const routes = createRoutes([
     { route: '/', component: <Home /> },
     { route: '/ctwo', component: <CTwo /> },
@@ -36,13 +36,12 @@ export default () => {
     },
   ])
 
-  // const changeTheme = () => setColor(color === 'dark' ? 'light' : 'dark')
 
   return (
     <Navigator
       menu={menu}
       routes={routes}
-      config={{ title: 'Suthaka', showUser: true }}
+      config={{ title: 'Zuthaka', showUser: true }}
       userMenu={userMenu}
       extraIcons={[
         {

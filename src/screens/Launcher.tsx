@@ -1,40 +1,34 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Crud,
-  createFields,
-  useWindowSize,
-  createColumns,
-  TableTypes,
-  useAxios,
-  FormTypes,
-  callWs,
-} from 'material-crud'
+import React, { useEffect, useMemo } from 'react'
+import { createFields, createColumns, TableTypes, FormTypes } from 'material-crud'
 import Urls from '../util/Urls'
-import { crudInteractions, crudResponse } from '../util/CrudConfig'
-import { crudError, crudFinised } from '../util/addOns'
-import { useSnackbar } from 'notistack'
 import usePins from '../hooks/usePins'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai'
+import { useNavigator, useNavigatorConfig } from 'material-navigator'
+import FullCrud, { WSResponse } from '../components/FullCrud'
+import useAxios from '../util/useAxios'
 
 export default () => {
-  const { height } = useWindowSize()
-  const { call, response } = useAxios()
-  const { enqueueSnackbar } = useSnackbar()
-  const [listeners, setListeners] = useState<any[]>([])
+  useNavigatorConfig({ title: 'Launchers', noPadding: false })
+  const { setLoading } = useNavigator()
+
+  const [listeners, loadingListeners] = useAxios<WSResponse>({
+    onInit: {
+      url: Urls.listeners,
+    },
+  })
+
+  const [types, loadingTypes] = useAxios<WSResponse>({
+    onInit: {
+      url: Urls.launcher_type,
+    },
+  })
+
   const { pins, savePins, removePins } = usePins('launcher')
 
   useEffect(() => {
-    call({ url: Urls.launcher_type, method: 'GET' })
-    const getListeners = async () => {
-      const { response } = await callWs<any>({
-        url: Urls.listeners,
-        method: 'GET',
-      })
-      if (response?.results) setListeners(response?.results)
-    }
-    getListeners()
-  }, [call])
+    setLoading(loadingListeners || loadingTypes)
+  }, [loadingListeners, loadingTypes, setLoading])
 
   const columns = useMemo(
     () =>
@@ -56,14 +50,17 @@ export default () => {
           title: 'Listener',
           type: FormTypes.Options,
           placeholder: 'Select one listener',
-          options: listeners?.map(({ type, id }: any) => ({ id, title: `${type} (${id})` })),
+          options: listeners?.results.map(({ type, id }: any) => ({
+            id,
+            title: `${type} (${id})`,
+          })),
         },
         {
           id: 'type',
           title: 'Type',
           type: FormTypes.Options,
           placeholder: 'Select one type',
-          options: response?.results?.map(({ name, id }: any) => ({ id: name })) || [],
+          options: types?.results?.map(({ name, id }: any) => ({ id: name })) || [],
         },
         {
           id: 'options',
@@ -75,34 +72,44 @@ export default () => {
           ],
         },
       ]),
-    [response, listeners],
+    [listeners, types],
   )
 
   return (
-    <Crud
-      height={height - 200}
-      description="Launcher"
-      name="Launcher"
-      url={Urls.launcher}
-      actions={{ edit: true, delete: true }}
-      itemId="id"
-      idInUrl
-      columns={columns}
-      fields={fields}
-      response={crudResponse}
-      interaction={crudInteractions}
-      onError={crudError(enqueueSnackbar)}
-      onFinished={crudFinised(enqueueSnackbar, 'Launcher')}
-      extraActions={(rowData: any) => {
-        const isMarked = pins.includes(rowData.id)
-        return [
-          <Tooltip title="Pin to top" key={rowData.id}>
-            <IconButton onClick={() => (isMarked ? removePins(rowData.id) : savePins(rowData.id))}>
-              {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
-            </IconButton>
-          </Tooltip>,
-        ]
-      }}
-    />
+    <React.Fragment>
+      {pins.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginLeft: 100,
+            marginRight: 100,
+            marginBottom: 30,
+          }}>
+          {pins.map((id) => (
+            <span>{id}</span>
+          ))}
+        </div>
+      )}
+      <FullCrud
+        description="Launcher"
+        name="Launcher"
+        url={Urls.launcher}
+        itemId="id"
+        columns={columns}
+        fields={fields}
+        extraActions={(rowData: any) => {
+          const isMarked = pins.includes(rowData.id)
+          return [
+            <Tooltip title="Pin to top" key={rowData.id}>
+              <IconButton
+                onClick={() => (isMarked ? removePins(rowData.id) : savePins(rowData.id))}>
+                {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
+              </IconButton>
+            </Tooltip>,
+          ]
+        }}
+      />
+    </React.Fragment>
   )
 }

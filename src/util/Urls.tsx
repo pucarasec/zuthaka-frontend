@@ -8,4 +8,6 @@ export default {
 //   lauchers:
   listeners: `${baseUrl}/listeners`,
   listeners_types: `${baseUrl}/listeners/types`,
+
+  agents: `${baseUrl}/agents`,
 }

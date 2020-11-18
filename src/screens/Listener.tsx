@@ -1,21 +1,14 @@
-import React, { memo, useEffect, useMemo, useState } from 'react'
+import React, { memo, useEffect, useMemo } from 'react'
 import * as Yup from 'yup'
-import {
-  callWs,
-  createColumns,
-  createFields,
-  Crud,
-  FormTypes,
-  TableTypes,
-  useWindowSize,
-} from 'material-crud'
+import { createColumns, createFields, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { AiOutlinePushpin, AiFillPushpin } from 'react-icons/ai'
 import usePins from '../hooks/usePins'
-import { crudInteractions, crudResponse } from '../util/CrudConfig'
 import Urls from '../util/Urls'
-import { useLocation } from 'react-router-dom'
 import { FaChevronCircleDown, FaChevronCircleUp, FaRegBookmark } from 'react-icons/fa'
+import { useNavigator, useNavigatorConfig } from 'material-navigator'
+import FullCrud, { WSResponse } from '../components/FullCrud'
+import useAxios from '../util/useAxios'
 
 interface ListenerProps {
   id: number
@@ -25,18 +18,11 @@ interface ListenerProps {
 }
 
 const PinTop = memo(({ id }: any) => {
-  const [listener, setListener] = useState<ListenerProps | null>(null)
-
-  useEffect(() => {
-    const getListener = async () => {
-      const { response } = await callWs<any>({
-        url: `${Urls.listeners}/${id}`,
-        method: 'GET',
-      })
-      setListener(response)
-    }
-    getListener()
-  }, [id])
+  const [listener] = useAxios<ListenerProps>({
+    onInit: {
+      url: `${Urls.listeners}/${id}`,
+    },
+  })
 
   return (
     <div style={{ display: 'flex' }}>
@@ -49,36 +35,25 @@ const PinTop = memo(({ id }: any) => {
 })
 
 export default () => {
-  const { height } = useWindowSize()
-  const { state } = useLocation()
-  const [types, setTypes] = useState<any[]>([])
-  const [c2, setC2] = useState<any[]>([])
+  useNavigatorConfig({ title: 'Listeners', noPadding: false })
+  const { setLoading } = useNavigator()
+
+  const [types, loadingTypes] = useAxios<WSResponse<any[]>>({
+    onInit: {
+      url: Urls.listeners_types,
+    },
+  })
+  const [c2, loadingC2] = useAxios<WSResponse<any[]>>({
+    onInit: {
+      url: Urls.listeners_types,
+    },
+  })
+
+  useEffect(() => {
+    setLoading(loadingC2 || loadingTypes)
+  }, [loadingC2, loadingTypes, setLoading])
+
   const { pins, savePins, removePins } = usePins('listener')
-
-  useEffect(() => {
-    const getTypes = async () => {
-      const { response } = await callWs<any>({
-        url: Urls.listeners_types,
-        method: 'GET',
-      })
-      if (response?.results) setTypes(response?.results)
-    }
-    getTypes()
-    const getC2 = async () => {
-      const { response } = await callWs<any>({
-        url: Urls.c2,
-        method: 'GET',
-      })
-      if (response?.results) setC2(response?.results)
-    }
-    getC2()
-  }, [])
-
-  useEffect(() => {
-    console.log(state)
-    if (state) {
-    }
-  }, [state])
 
   const columns = useMemo(
     () =>
@@ -118,7 +93,8 @@ export default () => {
           id: 'c2_name',
           type: TableTypes.String,
           title: 'C2 Name',
-          cellComponent: ({ rowData }) => c2.find((x) => x.id === rowData.c2_id)?.type || '-',
+          cellComponent: ({ rowData }) =>
+            c2?.results.find((x) => x.id === rowData.c2_id)?.type || '-',
           width: 1,
         },
         {
@@ -137,7 +113,7 @@ export default () => {
         {
           id: 'c2_id',
           type: FormTypes.Options,
-          options: c2.map(({ type, id }: any) => ({ id, title: `${type} (${id})` })),
+          options: c2?.results.map(({ name, id }: any) => ({ id, title: `${name} (${id})` })) || [],
           title: 'C2',
           placeholder: 'Select one C2',
         },
@@ -152,7 +128,7 @@ export default () => {
           id: 'c2_id',
           type: FormTypes.Options,
           validate: Yup.string().required(),
-          options: c2.map(({ type, id }: any) => ({ id, title: `${type} (${id})` })),
+          options: c2?.results.map(({ name, id }) => ({ id, title: `${name} (${id})` })) || [],
           title: 'C2',
           placeholder: 'Select one C2',
         },
@@ -161,7 +137,7 @@ export default () => {
           type: FormTypes.Options,
           title: 'Type',
           validate: Yup.string().required(),
-          options: types.map(({ name }: any) => ({ id: name })),
+          options: types?.results.map(({ name }) => ({ id: name })) || [],
           placeholder: 'Select one type',
         },
         {
@@ -193,15 +169,13 @@ export default () => {
           ))}
         </div>
       )}
-      <Crud
-        height={height - 250}
+      <FullCrud
         columns={columns}
         fields={fields}
         filters={filters}
         description="Listener"
         name="Listener"
         url={Urls.listeners}
-        actions={{ edit: true, delete: true }}
         itemId="id"
         idInUrl
         extraActions={(rowData: any) => {
@@ -221,8 +195,6 @@ export default () => {
             <FaRegBookmark />
           </IconButton>
         )}
-        response={crudResponse}
-        interaction={crudInteractions}
       />
     </React.Fragment>
   )

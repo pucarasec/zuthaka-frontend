@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { createColumns, createFields, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { FaChevronCircleDown, FaChevronCircleUp, FaEye } from 'react-icons/fa'
@@ -7,6 +7,7 @@ import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import { useHistory } from 'react-router-dom'
 import FullCrud, { WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
+import * as Yup from 'yup'
 
 export default () => {
   useNavigatorConfig({ title: 'Settings - C2', noPadding: false })
@@ -18,9 +19,18 @@ export default () => {
     },
   })
 
+  const [selectedType, setSelectedType] = useState('')
+
   useEffect(() => {
     setLoading(loadingTypes)
   }, [loadingTypes, setLoading])
+
+  const renderType = (type: string): FormTypes => {
+    if (type === 'string') return FormTypes.Input
+    else if (type === 'integer') return FormTypes.Number
+
+    return FormTypes.OnlyTitle
+  }
 
   const columns = useMemo(
     () =>
@@ -66,19 +76,30 @@ export default () => {
           title: 'Type',
           type: FormTypes.Options,
           placeholder: 'Select one type',
-          options: types?.results.map(({ name }: any) => ({ id: name })) || [],
+          options: types?.results.map(({ id, name }: any) => ({ id, title: name })) || [],
+          onSelect: (val) => setSelectedType(val as string),
         },
         {
           id: 'options',
           title: 'Options',
           type: FormTypes.Multiple,
-          configuration: [
-            { id: 'name', type: FormTypes.Input, title: 'Name' },
-            { id: 'value', type: FormTypes.Input, title: 'Value' },
-          ],
+          configuration: !selectedType
+            ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
+            : types?.results
+                .find((x: any) => x.id === selectedType)
+                .options.map(({ name, type, required, description }: any) => ({
+                  id: name,
+                  title: name,
+                  type: renderType(type),
+                  help: description,
+                  validate:
+                    required.toLowerCase() === 'true'
+                      ? Yup.string().required('Campo obligatorio')
+                      : false,
+                })),
         },
       ]),
-    [types],
+    [types, selectedType],
   )
 
   return (
@@ -100,6 +121,17 @@ export default () => {
       itemId="id"
       itemName="type"
       idInUrl
+      transform={(props, rowData) => {
+        if (props === 'new' || props === 'update') {
+          return {
+            ...rowData,
+            options: rowData.options.map((item: any) =>
+              Object.keys(item).map((key) => ({ name: key, value: item[key] })),
+            ),
+          }
+        }
+        return rowData
+      }}
     />
   )
 }

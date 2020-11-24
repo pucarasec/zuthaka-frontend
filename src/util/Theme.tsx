@@ -1,7 +1,7 @@
 import React, { Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from 'react'
 import { createMuiTheme } from '@material-ui/core'
 import { createContext } from 'react'
-import { blue, cyan } from '@material-ui/core/colors'
+import { blue, grey } from '@material-ui/core/colors'
 
 type ThemeOptions = 'light' | 'dark'
 type Context = [ThemeOptions, Dispatch<SetStateAction<ThemeOptions>>]
@@ -26,7 +26,7 @@ export const useColorTheme = () => {
 export const getTheme = (color: ThemeOptions) => {
   return createMuiTheme({
     palette: {
-      primary: color === 'dark' ? cyan : blue,
+      primary: { main: color === 'dark' ? grey[700] : blue[500] },
       type: color,
     },
     typography: {

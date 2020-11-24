@@ -38,14 +38,14 @@ export default () => {
   useNavigatorConfig({ title: 'Listeners', noPadding: false })
   const { setLoading } = useNavigator()
 
-  const [types, loadingTypes] = useAxios<WSResponse<any[]>>({
+  const [listenerTypes, loadingTypes] = useAxios<WSResponse<any[]>>({
     onInit: {
       url: Urls.listeners_types,
     },
   })
-  const [c2, loadingC2] = useAxios<WSResponse<any[]>>({
+  const [c2Types, loadingC2] = useAxios<WSResponse<any[]>>({
     onInit: {
-      url: Urls.listeners_types,
+      url: Urls.c2_types,
     },
   })
 
@@ -94,7 +94,7 @@ export default () => {
           type: TableTypes.String,
           title: 'C2 Name',
           cellComponent: ({ rowData }) =>
-            c2?.results.find((x) => x.id === rowData.c2_id)?.type || '-',
+            c2Types?.results.find((x) => x.id === rowData.c2_id)?.type || '-',
           width: 1,
         },
         {
@@ -104,7 +104,7 @@ export default () => {
           width: 3,
         },
       ]),
-    [c2],
+    [c2Types],
   )
 
   const filters = useMemo(
@@ -113,12 +113,33 @@ export default () => {
         {
           id: 'c2_id',
           type: FormTypes.Options,
-          options: c2?.results.map(({ name, id }: any) => ({ id, title: `${name} (${id})` })) || [],
+          options:
+            c2Types?.results.map(({ name, id }: any) => ({ id, title: `${name} (${id})` })) || [],
           title: 'C2',
           placeholder: 'Select one C2',
+          multiple: true,
+        },
+        {
+          id: 'listener_type_query',
+          type: FormTypes.Options,
+          options:
+            listenerTypes?.results.map(({ name, id }: any) => ({ id, title: `${name} (${id})` })) ||
+            [],
+          title: 'Listener type',
+          placeholder: 'Select one Listener type',
+        },
+        {
+          id: 'created_since',
+          type: FormTypes.Date,
+          title: 'Created Since',
+        },
+        {
+          id: 'created_until',
+          type: FormTypes.Date,
+          title: 'Created Until',
         },
       ]),
-    [c2],
+    [c2Types, listenerTypes],
   )
 
   const fields = useMemo(
@@ -128,7 +149,7 @@ export default () => {
           id: 'c2_id',
           type: FormTypes.Options,
           validate: Yup.string().required(),
-          options: c2?.results.map(({ name, id }) => ({ id, title: `${name} (${id})` })) || [],
+          options: c2Types?.results.map(({ name, id }) => ({ id, title: `${name} (${id})` })) || [],
           title: 'C2',
           placeholder: 'Select one C2',
         },
@@ -137,7 +158,7 @@ export default () => {
           type: FormTypes.Options,
           title: 'Type',
           validate: Yup.string().required(),
-          options: types?.results.map(({ name }) => ({ id: name })) || [],
+          options: listenerTypes?.results.map(({ name }) => ({ id: name })) || [],
           placeholder: 'Select one type',
         },
         {
@@ -150,7 +171,7 @@ export default () => {
           ],
         },
       ]),
-    [c2, types],
+    [c2Types, listenerTypes],
   )
 
   return (
@@ -195,6 +216,11 @@ export default () => {
             <FaRegBookmark />
           </IconButton>
         )}
+        transformFilter={(query) => {
+          const keys = Object.keys(query)
+          const finalFilter = keys.reduce((acc, it) => ({ ...acc, [it]: query[it].value }), {})
+          return finalFilter
+        }}
       />
     </React.Fragment>
   )

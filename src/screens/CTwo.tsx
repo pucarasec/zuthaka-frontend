@@ -25,12 +25,16 @@ export default () => {
     setLoading(loadingTypes)
   }, [loadingTypes, setLoading])
 
+<<<<<<< HEAD
   const renderType = (type: string): FormTypes => {
     if (type === 'string') return FormTypes.Input
     else if (type === 'integer') return FormTypes.Number
 
     return FormTypes.OnlyTitle
   }
+=======
+  console.log(types)
+>>>>>>> agents
 
   const columns = useMemo(
     () =>

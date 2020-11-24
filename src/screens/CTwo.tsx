@@ -22,6 +22,8 @@ export default () => {
     setLoading(loadingTypes)
   }, [loadingTypes, setLoading])
 
+  console.log(types)
+
   const columns = useMemo(
     () =>
       createColumns([

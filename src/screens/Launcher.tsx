@@ -87,7 +87,7 @@ export default () => {
             marginBottom: 30,
           }}>
           {pins.map((id) => (
-            <span>{id}</span>
+            <span key={id}>{id}</span>
           ))}
         </div>
       )}

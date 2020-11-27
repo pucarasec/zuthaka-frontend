@@ -1,32 +1,29 @@
-import React, { useEffect, useMemo } from 'react'
-import {
-  createColumns,
-  createFields,
-  Crud,
-  FormTypes,
-  TableTypes,
-  useAxios,
-  useWindowSize,
-} from 'material-crud'
+import React, { useEffect, useMemo, useState } from 'react'
+import { createColumns, createFields, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { FaChevronCircleDown, FaChevronCircleUp, FaEye } from 'react-icons/fa'
 import Urls from '../util/Urls'
-import { crudResponse, crudInteractions } from '../util/CrudConfig'
-import { useNavigatorConfig } from 'material-navigator'
+import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import { useHistory } from 'react-router-dom'
-import { crudError, crudFinised } from '../util/addOns'
-import { useSnackbar } from 'notistack'
+import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
+import useAxios from '../util/useAxios'
+import * as Yup from 'yup'
 
 export default () => {
-  useNavigatorConfig({ title: 'Settings - C2' })
+  useNavigatorConfig({ title: 'Settings - C2', noPadding: false })
+  const { setLoading } = useNavigator()
   const { push } = useHistory()
-  const { enqueueSnackbar } = useSnackbar()
-  const { call, response } = useAxios()
-  const { height } = useWindowSize()
+  const [types, loadingTypes] = useAxios<WSResponse<any[]>>({
+    onInit: {
+      url: Urls.c2_types,
+    },
+  })
+
+  const [optionsMultiple, setOptionsMultiple] = useState<any[]>([])
 
   useEffect(() => {
-    call({ url: Urls.c2_types, method: 'GET' })
-  }, [call])
+    setLoading(loadingTypes)
+  }, [loadingTypes, setLoading])
 
   const columns = useMemo(
     () =>
@@ -54,6 +51,8 @@ export default () => {
           id: 'type',
           title: 'Type',
           type: TableTypes.String,
+          cellComponent: ({ rowData }) =>
+            types?.results.find((x) => x.id === rowData.c2_type)?.name || '-',
         },
         {
           id: 'creation_date',
@@ -61,7 +60,7 @@ export default () => {
           type: TableTypes.String,
         },
       ]),
-    [],
+    [types],
   )
 
   const fields = useMemo(
@@ -72,30 +71,67 @@ export default () => {
           title: 'Type',
           type: FormTypes.Options,
           placeholder: 'Select one type',
-          options: response?.results?.map(({ name }: any) => ({ id: name })) || [],
+          options: types?.results.map(({ id, name }: any) => ({ id, title: name })) || [],
+          onSelect: (val) => {
+            setOptionsMultiple(types?.results.find((x) => x.id === val)?.options || [])
+          },
         },
         {
           id: 'options',
           title: 'Options',
           type: FormTypes.Multiple,
-          configuration: [
-            { id: 'name', type: FormTypes.Input, title: 'Name' },
-            { id: 'value', type: FormTypes.Input, title: 'Value' },
-          ],
+          configuration: [],
+          // optionsMultiple.length === 0
+          //   ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
+          //   : optionsMultiple.map(({ name, type, required, description }: any) => ({
+          //       id: name,
+          //       title: name,
+          //       type: renderType(type),
+          //       help: description || '',
+          //       // validate:
+          //       //   required.toLowerCase() === 'true' && Yup.string().required('Campo obligatorio'),
+          //     })),
         },
       ]),
-    [response],
+    [types, optionsMultiple],
+  )
+
+  const filters = useMemo(
+    () =>
+      createFields([
+        // {
+        //   id: 'c2_id',
+        //   type: FormTypes.Options,
+        //   options:
+        //     types?.results.map(({ name, id }: any) => ({
+        //       id,
+        //       title: `${name} (${id})`,
+        //     })) || [],
+        //   title: 'C2',
+        //   placeholder: 'Select one C2',
+        // },
+        {
+          id: 'created_since',
+          type: FormTypes.Date,
+          title: 'Created Since',
+        },
+        {
+          id: 'created_until',
+          type: FormTypes.Date,
+          title: 'Created Until',
+        },
+      ]),
+    [],
   )
 
   return (
-    <Crud
+    <FullCrud
       description="C2 example"
       name="C2"
       url={Urls.c2}
-      height={height - 200}
+      filters={filters}
       columns={columns}
       fields={fields}
-      actions={{ edit: true, delete: true }}
       extraActions={(rowData) => {
         return [
           <Tooltip title="Go to listeners" key={rowData.id}>
@@ -105,21 +141,20 @@ export default () => {
           </Tooltip>,
         ]
       }}
-      // rightToolbar={({}) => {
-      // 	return (
-      // 		<IconButton size="small">
-      // 			<FaCheck />
-      // 		</IconButton>
-      // 	)
-      // }}
-      onError={crudError(enqueueSnackbar)}
-      onFinished={crudFinised(enqueueSnackbar, 'C2')}
       itemId="id"
       itemName="type"
       idInUrl
-      response={crudResponse}
-      interaction={crudInteractions}
-      // transformToEdit={(rowData) => ({ ...rowData, type: rowData.type })}
+      transform={(action, rowData) => {
+        if (action === 'new' || action === 'update') {
+          return {
+            ...rowData,
+            options: rowData.options.map((item: any) =>
+              Object.keys(item).map((key) => ({ name: key, value: item[key] })),
+            ),
+          }
+        }
+        return rowData
+      }}
     />
   )
 }

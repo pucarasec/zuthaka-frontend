@@ -1,40 +1,36 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import {
-  Crud,
-  createFields,
-  useWindowSize,
-  createColumns,
-  TableTypes,
-  useAxios,
-  FormTypes,
-  callWs,
-} from 'material-crud'
+import { createFields, createColumns, TableTypes, FormTypes } from 'material-crud'
 import Urls from '../util/Urls'
-import { crudInteractions, crudResponse } from '../util/CrudConfig'
-import { crudError, crudFinised } from '../util/addOns'
-import { useSnackbar } from 'notistack'
 import usePins from '../hooks/usePins'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai'
+import { useNavigator, useNavigatorConfig } from 'material-navigator'
+import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
+import useAxios from '../util/useAxios'
+import * as Yup from 'yup'
 
 export default () => {
-  const { height } = useWindowSize()
-  const { call, response } = useAxios()
-  const { enqueueSnackbar } = useSnackbar()
-  const [listeners, setListeners] = useState<any[]>([])
+  useNavigatorConfig({ title: 'Launchers', noPadding: false })
+  const { setLoading } = useNavigator()
+
+  const [listenersTypes, loadingListeners] = useAxios<WSResponse>({
+    onInit: {
+      url: Urls.listeners_types,
+    },
+  })
+
+  const [types, loadingTypes] = useAxios<WSResponse>({
+    onInit: {
+      url: Urls.launcher_type,
+    },
+  })
+
   const { pins, savePins, removePins } = usePins('launcher')
+  const [selectedType, setSelectedType] = useState('')
 
   useEffect(() => {
-    call({ url: Urls.launcher_type, method: 'GET' })
-    const getListeners = async () => {
-      const { response } = await callWs<any>({
-        url: Urls.listeners,
-        method: 'GET',
-      })
-      if (response?.results) setListeners(response?.results)
-    }
-    getListeners()
-  }, [call])
+    setLoading(loadingListeners || loadingTypes)
+  }, [loadingListeners, loadingTypes, setLoading])
 
   const columns = useMemo(
     () =>
@@ -44,8 +40,29 @@ export default () => {
           type: TableTypes.String,
           title: 'ID',
         },
+        {
+          id: 'listener_name',
+          type: TableTypes.String,
+          title: 'Listener Name',
+          cellComponent: ({ rowData }) =>
+            types?.results.find((x: any) => x.id === rowData.id)?.name || '-',
+          width: 2,
+        },
+        {
+          id: 'listener_id',
+          type: TableTypes.String,
+          title: 'Listener ID',
+        },
+        {
+          id: 'listener_name',
+          type: TableTypes.String,
+          title: 'Listener Name',
+          cellComponent: ({ rowData }) =>
+            listenersTypes?.results.find((x: any) => x.id === rowData.listener_id)?.name || '-',
+          width: 1,
+        },
       ]),
-    [],
+    [types, listenersTypes],
   )
 
   const fields = useMemo(
@@ -56,53 +73,78 @@ export default () => {
           title: 'Listener',
           type: FormTypes.Options,
           placeholder: 'Select one listener',
-          options: listeners?.map(({ type, id }: any) => ({ id, title: `${type} (${id})` })),
+          options: listenersTypes?.results.map(({ name, id }: any) => ({
+            id: id.toString(),
+            title: `${name} (${id})`,
+          })),
         },
         {
           id: 'type',
           title: 'Type',
           type: FormTypes.Options,
           placeholder: 'Select one type',
-          options: response?.results?.map(({ name, id }: any) => ({ id: name })) || [],
+          options:
+            types?.results?.map(({ name, id }: any) => ({ id: id.toString(), title: name })) || [],
+          onSelect: (val) => setSelectedType(val as string),
         },
         {
           id: 'options',
           title: 'Options',
           type: FormTypes.Multiple,
-          configuration: [
-            { id: 'name', type: FormTypes.Input, title: 'Name' },
-            { id: 'value', type: FormTypes.Input, title: 'Value' },
-          ],
+          configuration: !selectedType
+            ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
+            : types?.results
+                .find((x: any) => x.id.toString() === selectedType)
+                .options.map(({ name, type, required, description }: any) => ({
+                  id: name,
+                  title: name,
+                  type: renderType(type),
+                  help: description,
+                  validate:
+                    required.toLowerCase() === 'true'
+                      ? Yup.string().required('Campo obligatorio')
+                      : false,
+                })),
         },
       ]),
-    [response, listeners],
+    [listenersTypes, types, selectedType],
   )
 
   return (
-    <Crud
-      height={height - 200}
-      description="Launcher"
-      name="Launcher"
-      url={Urls.launcher}
-      actions={{ edit: true, delete: true }}
-      itemId="id"
-      idInUrl
-      columns={columns}
-      fields={fields}
-      response={crudResponse}
-      interaction={crudInteractions}
-      onError={crudError(enqueueSnackbar)}
-      onFinished={crudFinised(enqueueSnackbar, 'Launcher')}
-      extraActions={(rowData: any) => {
-        const isMarked = pins.includes(rowData.id)
-        return [
-          <Tooltip title="Pin to top" key={rowData.id}>
-            <IconButton onClick={() => (isMarked ? removePins(rowData.id) : savePins(rowData.id))}>
-              {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
-            </IconButton>
-          </Tooltip>,
-        ]
-      }}
-    />
+    <React.Fragment>
+      {pins.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginLeft: 100,
+            marginRight: 100,
+            marginBottom: 30,
+          }}>
+          {pins.map((id) => (
+            <span key={id}>{id}</span>
+          ))}
+        </div>
+      )}
+      <FullCrud
+        description="Launcher"
+        name="Launcher"
+        url={Urls.launcher}
+        itemId="id"
+        columns={columns}
+        fields={fields}
+        extraActions={(rowData: any) => {
+          const isMarked = pins.includes(rowData.id)
+          return [
+            <Tooltip title="Pin to top" key={rowData.id}>
+              <IconButton
+                onClick={() => (isMarked ? removePins(rowData.id) : savePins(rowData.id))}>
+                {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
+              </IconButton>
+            </Tooltip>,
+          ]
+        }}
+      />
+    </React.Fragment>
   )
 }

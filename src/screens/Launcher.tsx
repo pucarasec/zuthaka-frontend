@@ -1,20 +1,21 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { createFields, createColumns, TableTypes, FormTypes } from 'material-crud'
 import Urls from '../util/Urls'
 import usePins from '../hooks/usePins'
 import { Tooltip, IconButton } from '@material-ui/core'
 import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
-import FullCrud, { WSResponse } from '../components/FullCrud'
+import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
+import * as Yup from 'yup'
 
 export default () => {
   useNavigatorConfig({ title: 'Launchers', noPadding: false })
   const { setLoading } = useNavigator()
 
-  const [listeners, loadingListeners] = useAxios<WSResponse>({
+  const [listenersTypes, loadingListeners] = useAxios<WSResponse>({
     onInit: {
-      url: Urls.listeners,
+      url: Urls.listeners_types,
     },
   })
 
@@ -25,6 +26,7 @@ export default () => {
   })
 
   const { pins, savePins, removePins } = usePins('launcher')
+  const [selectedType, setSelectedType] = useState('')
 
   useEffect(() => {
     setLoading(loadingListeners || loadingTypes)
@@ -38,8 +40,29 @@ export default () => {
           type: TableTypes.String,
           title: 'ID',
         },
+        {
+          id: 'listener_name',
+          type: TableTypes.String,
+          title: 'Listener Name',
+          cellComponent: ({ rowData }) =>
+            types?.results.find((x: any) => x.id === rowData.id)?.name || '-',
+          width: 2,
+        },
+        {
+          id: 'listener_id',
+          type: TableTypes.String,
+          title: 'Listener ID',
+        },
+        {
+          id: 'listener_name',
+          type: TableTypes.String,
+          title: 'Listener Name',
+          cellComponent: ({ rowData }) =>
+            listenersTypes?.results.find((x: any) => x.id === rowData.listener_id)?.name || '-',
+          width: 1,
+        },
       ]),
-    [],
+    [types, listenersTypes],
   )
 
   const fields = useMemo(
@@ -50,9 +73,9 @@ export default () => {
           title: 'Listener',
           type: FormTypes.Options,
           placeholder: 'Select one listener',
-          options: listeners?.results.map(({ type, id }: any) => ({
-            id,
-            title: `${type} (${id})`,
+          options: listenersTypes?.results.map(({ name, id }: any) => ({
+            id: id.toString(),
+            title: `${name} (${id})`,
           })),
         },
         {
@@ -60,19 +83,31 @@ export default () => {
           title: 'Type',
           type: FormTypes.Options,
           placeholder: 'Select one type',
-          options: types?.results?.map(({ name, id }: any) => ({ id: name })) || [],
+          options:
+            types?.results?.map(({ name, id }: any) => ({ id: id.toString(), title: name })) || [],
+          onSelect: (val) => setSelectedType(val as string),
         },
         {
           id: 'options',
           title: 'Options',
           type: FormTypes.Multiple,
-          configuration: [
-            { id: 'name', type: FormTypes.Input, title: 'Name' },
-            { id: 'value', type: FormTypes.Input, title: 'Value' },
-          ],
+          configuration: !selectedType
+            ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
+            : types?.results
+                .find((x: any) => x.id.toString() === selectedType)
+                .options.map(({ name, type, required, description }: any) => ({
+                  id: name,
+                  title: name,
+                  type: renderType(type),
+                  help: description,
+                  validate:
+                    required.toLowerCase() === 'true'
+                      ? Yup.string().required('Campo obligatorio')
+                      : false,
+                })),
         },
       ]),
-    [listeners, types],
+    [listenersTypes, types, selectedType],
   )
 
   return (

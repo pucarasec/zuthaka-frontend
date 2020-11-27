@@ -14,9 +14,16 @@ type ResponseProps<T> = [
 type Enqueue = (message: React.ReactNode, options?: OptionsObject | undefined) => React.ReactText
 
 export const mostrarError = (enqueueSnackbar: Enqueue) => (error: Error) => {
-  enqueueSnackbar(error.message, {
-    variant: 'error',
-  })
+  let message = ''
+  if (error.message) {
+    message = error.message
+  } else if (Array.isArray(error)) {
+    message = error[0]
+  } else {
+    message = 'Error ocurred' // (error as string) || 'Error ocurred'
+  }
+
+  enqueueSnackbar(message, { variant: 'error' })
 }
 
 export default <T extends any>(props?: UseAxiosProps): ResponseProps<T> => {

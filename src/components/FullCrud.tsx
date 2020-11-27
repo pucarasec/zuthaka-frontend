@@ -1,4 +1,4 @@
-import { Crud, useWindowSize } from 'material-crud'
+import { Crud, FormTypes, useWindowSize } from 'material-crud'
 import { CrudProps } from 'material-crud/dist/components/Crud'
 import { useNavigatorConfig } from 'material-navigator'
 import { useSnackbar } from 'notistack'
@@ -24,6 +24,13 @@ export interface WSResponse<T = any> {
 
 type FullCrudProps = Omit<CrudProps, 'response'>
 
+export const renderType = (type: string): FormTypes => {
+  if (type === 'string') return FormTypes.Input
+  else if (type === 'integer') return FormTypes.Number
+
+  return FormTypes.OnlyTitle
+}
+
 export default (props: FullCrudProps) => {
   const { name } = props
   useNavigatorConfig({ title: name, showUser: true })
@@ -46,8 +53,9 @@ export default (props: FullCrudProps) => {
       }}
       height={height - 190}
       interaction={{ page: 'page', perPage: 'limit' }}
-      onError={mostrarError(enqueueSnackbar)}
       idInUrl
+      noFilterOptions
+      onError={mostrarError(enqueueSnackbar)}
       onFinished={(what, genero) => {
         switch (what) {
           case 'new':
@@ -66,6 +74,14 @@ export default (props: FullCrudProps) => {
             })
             break
         }
+      }}
+      transform={(action, rowData) => {
+        if (action === 'query') return { ...rowData, ...rowData.filter }
+      }}
+      transformFilter={(query) => {
+        const keys = Object.keys(query)
+        const finalFilter = keys.reduce((acc, it) => ({ ...acc, [it]: query[it].value }), {})
+        return finalFilter
       }}
     />
   )

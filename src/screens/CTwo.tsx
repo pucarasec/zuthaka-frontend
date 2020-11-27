@@ -5,7 +5,7 @@ import { FaChevronCircleDown, FaChevronCircleUp, FaEye } from 'react-icons/fa'
 import Urls from '../util/Urls'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import { useHistory } from 'react-router-dom'
-import FullCrud, { WSResponse } from '../components/FullCrud'
+import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
 import * as Yup from 'yup'
 
@@ -13,28 +13,17 @@ export default () => {
   useNavigatorConfig({ title: 'Settings - C2', noPadding: false })
   const { setLoading } = useNavigator()
   const { push } = useHistory()
-  const [types, loadingTypes] = useAxios<WSResponse>({
+  const [types, loadingTypes] = useAxios<WSResponse<any[]>>({
     onInit: {
       url: Urls.c2_types,
     },
   })
 
-  const [selectedType, setSelectedType] = useState('')
+  const [optionsMultiple, setOptionsMultiple] = useState<any[]>([])
 
   useEffect(() => {
     setLoading(loadingTypes)
   }, [loadingTypes, setLoading])
-
-<<<<<<< HEAD
-  const renderType = (type: string): FormTypes => {
-    if (type === 'string') return FormTypes.Input
-    else if (type === 'integer') return FormTypes.Number
-
-    return FormTypes.OnlyTitle
-  }
-=======
-  console.log(types)
->>>>>>> agents
 
   const columns = useMemo(
     () =>
@@ -62,6 +51,8 @@ export default () => {
           id: 'type',
           title: 'Type',
           type: TableTypes.String,
+          cellComponent: ({ rowData }) =>
+            types?.results.find((x) => x.id === rowData.c2_type)?.name || '-',
         },
         {
           id: 'creation_date',
@@ -69,7 +60,7 @@ export default () => {
           type: TableTypes.String,
         },
       ]),
-    [],
+    [types],
   )
 
   const fields = useMemo(
@@ -81,29 +72,56 @@ export default () => {
           type: FormTypes.Options,
           placeholder: 'Select one type',
           options: types?.results.map(({ id, name }: any) => ({ id, title: name })) || [],
-          onSelect: (val) => setSelectedType(val as string),
+          onSelect: (val) => {
+            setOptionsMultiple(types?.results.find((x) => x.id === val)?.options || [])
+          },
         },
         {
           id: 'options',
           title: 'Options',
           type: FormTypes.Multiple,
-          configuration: !selectedType
-            ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
-            : types?.results
-                .find((x: any) => x.id === selectedType)
-                .options.map(({ name, type, required, description }: any) => ({
-                  id: name,
-                  title: name,
-                  type: renderType(type),
-                  help: description,
-                  validate:
-                    required.toLowerCase() === 'true'
-                      ? Yup.string().required('Campo obligatorio')
-                      : false,
-                })),
+          configuration: [],
+          // optionsMultiple.length === 0
+          //   ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
+          //   : optionsMultiple.map(({ name, type, required, description }: any) => ({
+          //       id: name,
+          //       title: name,
+          //       type: renderType(type),
+          //       help: description || '',
+          //       // validate:
+          //       //   required.toLowerCase() === 'true' && Yup.string().required('Campo obligatorio'),
+          //     })),
         },
       ]),
-    [types, selectedType],
+    [types, optionsMultiple],
+  )
+
+  const filters = useMemo(
+    () =>
+      createFields([
+        // {
+        //   id: 'c2_id',
+        //   type: FormTypes.Options,
+        //   options:
+        //     types?.results.map(({ name, id }: any) => ({
+        //       id,
+        //       title: `${name} (${id})`,
+        //     })) || [],
+        //   title: 'C2',
+        //   placeholder: 'Select one C2',
+        // },
+        {
+          id: 'created_since',
+          type: FormTypes.Date,
+          title: 'Created Since',
+        },
+        {
+          id: 'created_until',
+          type: FormTypes.Date,
+          title: 'Created Until',
+        },
+      ]),
+    [],
   )
 
   return (
@@ -111,6 +129,7 @@ export default () => {
       description="C2 example"
       name="C2"
       url={Urls.c2}
+      filters={filters}
       columns={columns}
       fields={fields}
       extraActions={(rowData) => {
@@ -125,8 +144,8 @@ export default () => {
       itemId="id"
       itemName="type"
       idInUrl
-      transform={(props, rowData) => {
-        if (props === 'new' || props === 'update') {
+      transform={(action, rowData) => {
+        if (action === 'new' || action === 'update') {
           return {
             ...rowData,
             options: rowData.options.map((item: any) =>

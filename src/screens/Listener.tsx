@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo } from 'react'
+import React, { memo, useEffect, useMemo, useState } from 'react'
 import * as Yup from 'yup'
 import { createColumns, createFields, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
@@ -7,7 +7,7 @@ import usePins from '../hooks/usePins'
 import Urls from '../util/Urls'
 import { FaChevronCircleDown, FaChevronCircleUp, FaRegBookmark } from 'react-icons/fa'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
-import FullCrud, { WSResponse } from '../components/FullCrud'
+import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
 
 interface ListenerProps {
@@ -54,6 +54,7 @@ export default () => {
   }, [loadingC2, loadingTypes, setLoading])
 
   const { pins, savePins, removePins } = usePins('listener')
+  const [selectedType, setSelectedType] = useState('')
 
   const columns = useMemo(
     () =>
@@ -94,17 +95,19 @@ export default () => {
           type: TableTypes.String,
           title: 'C2 Name',
           cellComponent: ({ rowData }) =>
-            c2Types?.results.find((x) => x.id === rowData.c2_id)?.type || '-',
+            c2Types?.results.find((x) => x.id === rowData.c2_id)?.name || '-',
           width: 1,
         },
         {
           id: 'type',
           type: TableTypes.String,
           title: 'Type',
+          cellComponent: ({ rowData }) =>
+            listenerTypes?.results.find((x) => x.id === rowData.listener_type)?.name || '-',
           width: 3,
         },
       ]),
-    [c2Types],
+    [c2Types, listenerTypes],
   )
 
   const filters = useMemo(
@@ -114,13 +117,15 @@ export default () => {
           id: 'c2_id',
           type: FormTypes.Options,
           options:
-            c2Types?.results.map(({ name, id }: any) => ({ id, title: `${name} (${id})` })) || [],
+            c2Types?.results.map(({ name, id }: any) => ({
+              id,
+              title: `${name} (${id})`,
+            })) || [],
           title: 'C2',
           placeholder: 'Select one C2',
-          multiple: true,
         },
         {
-          id: 'listener_type_query',
+          id: 'listener_type',
           type: FormTypes.Options,
           options:
             listenerTypes?.results.map(({ name, id }: any) => ({ id, title: `${name} (${id})` })) ||
@@ -149,7 +154,11 @@ export default () => {
           id: 'c2_id',
           type: FormTypes.Options,
           validate: Yup.string().required(),
-          options: c2Types?.results.map(({ name, id }) => ({ id, title: `${name} (${id})` })) || [],
+          options:
+            c2Types?.results.map(({ name, id }) => ({
+              id: id.toString(),
+              title: `${name} (${id})`,
+            })) || [],
           title: 'C2',
           placeholder: 'Select one C2',
         },
@@ -158,20 +167,33 @@ export default () => {
           type: FormTypes.Options,
           title: 'Type',
           validate: Yup.string().required(),
-          options: listenerTypes?.results.map(({ name }) => ({ id: name })) || [],
+          options:
+            listenerTypes?.results.map(({ id, name }) => ({ id: id.toString(), title: name })) ||
+            [],
           placeholder: 'Select one type',
+          onSelect: (val) => setSelectedType(val as string),
         },
         {
           id: 'options',
           title: 'Options',
           type: FormTypes.Multiple,
-          configuration: [
-            { id: 'name', type: FormTypes.Input, title: 'Name' },
-            { id: 'value', type: FormTypes.Input, title: 'Value' },
-          ],
+          configuration: !selectedType
+            ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
+            : listenerTypes?.results
+                .find((x: any) => x.id.toString() === selectedType)
+                .options.map(({ name, type, required, description }: any) => ({
+                  id: name,
+                  title: name,
+                  type: renderType(type),
+                  help: description,
+                  validate:
+                    required.toLowerCase() === 'true'
+                      ? Yup.string().required('Campo obligatorio')
+                      : false,
+                })),
         },
       ]),
-    [c2Types, listenerTypes],
+    [c2Types, listenerTypes, selectedType],
   )
 
   return (
@@ -216,11 +238,12 @@ export default () => {
             <FaRegBookmark />
           </IconButton>
         )}
-        transformFilter={(query) => {
-          const keys = Object.keys(query)
-          const finalFilter = keys.reduce((acc, it) => ({ ...acc, [it]: query[it].value }), {})
-          return finalFilter
-        }}
+        // transformFilter={(query) => {
+        //   const keys = Object.keys(query)
+        //   const finalFilter = keys.reduce((acc, it) => ({ ...acc, [it]: query[it].value }), {})
+        //   console.log(finalFilter)
+        //   return finalFilter
+        // }}
       />
     </React.Fragment>
   )

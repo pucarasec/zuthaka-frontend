@@ -57,19 +57,20 @@ export default (props: FullCrudProps) => {
       noFilterOptions
       onError={mostrarError(enqueueSnackbar)}
       onFinished={(what, genero) => {
+        const charGenero = genero === 'F' ? 'a' : 'o'
         switch (what) {
           case 'new':
-            enqueueSnackbar(`${name} agregad${genero === 'F' ? 'a' : 'o'}`, {
+            enqueueSnackbar(`${name} agregad${charGenero}`, {
               variant: 'success',
             })
             break
           case 'update':
-            enqueueSnackbar(`${name} editad${genero === 'F' ? 'a' : 'o'}`, {
+            enqueueSnackbar(`${name} editad${charGenero}`, {
               variant: 'success',
             })
             break
           case 'delete':
-            enqueueSnackbar(`${name} borrad${genero === 'F' ? 'a' : 'o'}`, {
+            enqueueSnackbar(`${name} borrad${charGenero}`, {
               variant: 'info',
             })
             break

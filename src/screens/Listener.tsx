@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useState } from 'react'
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
 import * as Yup from 'yup'
 import { createColumns, createFields, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
@@ -9,6 +9,7 @@ import { FaChevronCircleDown, FaChevronCircleUp, FaRegBookmark } from 'react-ico
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
+import { useHistory } from 'react-router-dom'
 
 interface ListenerProps {
   id: number
@@ -37,6 +38,7 @@ const PinTop = memo(({ id }: any) => {
 export default () => {
   useNavigatorConfig({ title: 'Listeners', noPadding: false })
   const { setLoading } = useNavigator()
+  const { location } = useHistory()
 
   const [listenerTypes, loadingTypes] = useAxios<WSResponse<any[]>>({
     onInit: {
@@ -51,7 +53,7 @@ export default () => {
 
   useEffect(() => {
     setLoading(loadingC2 || loadingTypes)
-  }, [loadingC2, loadingTypes, setLoading])
+  }, [loadingC2, loadingTypes, setLoading, location])
 
   const { pins, savePins, removePins } = usePins('listener')
   const [selectedType, setSelectedType] = useState('')
@@ -238,12 +240,6 @@ export default () => {
             <FaRegBookmark />
           </IconButton>
         )}
-        // transformFilter={(query) => {
-        //   const keys = Object.keys(query)
-        //   const finalFilter = keys.reduce((acc, it) => ({ ...acc, [it]: query[it].value }), {})
-        //   console.log(finalFilter)
-        //   return finalFilter
-        // }}
       />
     </React.Fragment>
   )

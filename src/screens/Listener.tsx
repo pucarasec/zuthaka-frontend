@@ -38,7 +38,8 @@ const PinTop = memo(({ id }: any) => {
 export default () => {
   useNavigatorConfig({ title: 'Listeners', noPadding: false })
   const { setLoading } = useNavigator()
-  const { location } = useHistory()
+  const { location } = useHistory<any>()
+  const refFilter = useRef(true)
 
   const [listenerTypes, loadingTypes] = useAxios<WSResponse<any[]>>({
     onInit: {
@@ -53,7 +54,7 @@ export default () => {
 
   useEffect(() => {
     setLoading(loadingC2 || loadingTypes)
-  }, [loadingC2, loadingTypes, setLoading, location])
+  }, [loadingC2, loadingTypes, setLoading])
 
   const { pins, savePins, removePins } = usePins('listener')
   const [selectedType, setSelectedType] = useState('')
@@ -240,6 +241,17 @@ export default () => {
             <FaRegBookmark />
           </IconButton>
         )}
+        transform={(action, rowData) => {
+          if (action === 'query') {
+            const retorno = { ...rowData, ...rowData.filter }
+            if (refFilter.current && location?.state?.c2_id) {
+              retorno.c2_id = location.state.c2_id
+              refFilter.current = false
+            }
+            return retorno
+          }
+          return rowData
+        }}
       />
     </React.Fragment>
   )

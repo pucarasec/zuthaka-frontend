@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { createColumns, createFields, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { FaChevronCircleDown, FaChevronCircleUp, FaEye } from 'react-icons/fa'
@@ -7,7 +7,7 @@ import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import { useHistory } from 'react-router-dom'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
-import * as Yup from 'yup'
+import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
 
 export default () => {
   useNavigatorConfig({ title: 'Settings - C2', noPadding: false })
@@ -19,7 +19,7 @@ export default () => {
     },
   })
 
-  const [optionsMultiple, setOptionsMultiple] = useState<any[]>([])
+  const [selectedType, setSelectedType] = useState<string>('-1')
 
   useEffect(() => {
     setLoading(loadingTypes)
@@ -63,37 +63,59 @@ export default () => {
     [types],
   )
 
+  const renderOptions = useCallback(
+    () =>
+      types?.results.reduce((final, { id, options }): FieldProps[] => {
+        const item = options.map(
+          ({ type, name, description }: any): FieldProps => ({
+            id: `${id}-${name}`,
+            type: renderType(type),
+            title: name,
+            help: description || '',
+            depends: (props) => {
+              console.log(id === selectedType, id.toString(), selectedType)
+              return id.toString() === selectedType
+            },
+          }),
+        )
+        return [...final, item]
+      }, []),
+    [types, selectedType],
+  )
+
   const fields = useMemo(
     () =>
       createFields([
         {
-          id: 'type',
+          id: 'c2_type',
           title: 'Type',
           type: FormTypes.Options,
           placeholder: 'Select one type',
           options: types?.results.map(({ id, name }: any) => ({ id, title: name })) || [],
-          onSelect: (val) => {
-            setOptionsMultiple(types?.results.find((x) => x.id === val)?.options || [])
-          },
+          onSelect: (val) => setSelectedType(val.toString()),
         },
-        {
-          id: 'options',
-          title: 'Options',
-          type: FormTypes.Multiple,
-          configuration: [],
-          // optionsMultiple.length === 0
-          //   ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
-          //   : optionsMultiple.map(({ name, type, required, description }: any) => ({
-          //       id: name,
-          //       title: name,
-          //       type: renderType(type),
-          //       help: description || '',
-          //       // validate:
-          //       //   required.toLowerCase() === 'true' && Yup.string().required('Campo obligatorio'),
-          //     })),
-        },
+        renderOptions(),
+        // {
+        //   id: 'options',
+        //   title: 'Options',
+        //   // @ts-ignore
+        //   type: FormTypes.Multiple,
+        //   configuration:
+        //     types?.results.length === 0
+        //       ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
+        //       : types?.results
+        //           .find((x) => x.id === val)
+        //           ?.options.map(({ name, type, required, description }: any) => ({
+        //             id: name,
+        //             title: name,
+        //             type: renderType(type),
+        //             help: description || '',
+        //             // validate:
+        //             //   required.toLowerCase() === 'true' && Yup.string().required('Campo obligatorio'),
+        //           })),
+        // },
       ]),
-    [types, optionsMultiple],
+    [types, renderOptions],
   )
 
   const filters = useMemo(
@@ -131,7 +153,7 @@ export default () => {
       url={Urls.c2}
       filters={filters}
       columns={columns}
-      fields={fields}
+      fields={fields.flat()}
       extraActions={(rowData) => {
         return [
           <Tooltip title="Go to listeners" key={rowData.id}>
@@ -142,7 +164,6 @@ export default () => {
         ]
       }}
       itemId="id"
-      itemName="type"
       idInUrl
       transform={(action, rowData) => {
         if (action === 'new' || action === 'update') {

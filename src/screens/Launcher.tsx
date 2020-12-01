@@ -8,6 +8,7 @@ import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
 import * as Yup from 'yup'
+import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
 
 export default () => {
   useNavigatorConfig({ title: 'Launchers', noPadding: false })
@@ -19,7 +20,7 @@ export default () => {
     },
   })
 
-  const [types, loadingTypes] = useAxios<WSResponse>({
+  const [types, loadingTypes] = useAxios<WSResponse<any[]>>({
     onInit: {
       url: Urls.launcher_type,
     },
@@ -87,25 +88,36 @@ export default () => {
             types?.results?.map(({ name, id }: any) => ({ id: id.toString(), title: name })) || [],
           onSelect: (val) => setSelectedType(val as string),
         },
-        {
-          id: 'options',
-          title: 'Options',
-          type: FormTypes.Multiple,
-          configuration: !selectedType
-            ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
-            : types?.results
-                .find((x: any) => x.id.toString() === selectedType)
-                .options.map(({ name, type, required, description }: any) => ({
-                  id: name,
-                  title: name,
-                  type: renderType(type),
-                  help: description,
-                  validate:
-                    required.toLowerCase() === 'true'
-                      ? Yup.string().required('Campo obligatorio')
-                      : false,
-                })),
-        },
+        types?.results.reduce((final, { id: typeId, options }): FieldProps[] => {
+          const item = options.map(
+            ({ id, type, name, description }: any): FieldProps => ({
+              id,
+              type: renderType(type),
+              title: name,
+              help: description || '',
+            }),
+          )
+          return [...final, item]
+        }, []),
+        // {
+        //   id: 'options',
+        //   title: 'Options',
+        //   type: FormTypes.Multiple,
+        //   configuration: !selectedType
+        //     ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
+        //     : types?.results
+        //         .find((x: any) => x.id.toString() === selectedType)
+        //         .options.map(({ name, type, required, description }: any) => ({
+        //           id: name,
+        //           title: name,
+        //           type: renderType(type),
+        //           help: description,
+        //           validate:
+        //             required.toLowerCase() === 'true'
+        //               ? Yup.string().required('Campo obligatorio')
+        //               : false,
+        //         })),
+        // },
       ]),
     [listenersTypes, types, selectedType],
   )

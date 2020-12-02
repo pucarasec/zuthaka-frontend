@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { createFields, createColumns, TableTypes, FormTypes } from 'material-crud'
 import Urls from '../util/Urls'
 import usePins from '../hooks/usePins'
@@ -8,6 +8,7 @@ import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
 import * as Yup from 'yup'
+import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
 
 export default () => {
   useNavigatorConfig({ title: 'Launchers', noPadding: false })
@@ -19,14 +20,13 @@ export default () => {
     },
   })
 
-  const [types, loadingTypes] = useAxios<WSResponse>({
+  const [types, loadingTypes] = useAxios<WSResponse<any[]>>({
     onInit: {
       url: Urls.launcher_type,
     },
   })
 
   const { pins, savePins, removePins } = usePins('launcher')
-  const [selectedType, setSelectedType] = useState('')
 
   useEffect(() => {
     setLoading(loadingListeners || loadingTypes)
@@ -41,9 +41,9 @@ export default () => {
           title: 'ID',
         },
         {
-          id: 'listener_name',
+          id: 'launcher_name',
           type: TableTypes.String,
-          title: 'Listener Name',
+          title: 'Launcher Name',
           cellComponent: ({ rowData }) =>
             types?.results.find((x: any) => x.id === rowData.id)?.name || '-',
           width: 2,
@@ -74,40 +74,43 @@ export default () => {
           type: FormTypes.Options,
           placeholder: 'Select one listener',
           options: listenersTypes?.results.map(({ name, id }: any) => ({
-            id: id.toString(),
+            id,
             title: `${name} (${id})`,
           })),
+          validate: Yup.number().required('Required'),
         },
         {
-          id: 'type',
+          id: 'launcher_type',
           title: 'Type',
           type: FormTypes.Options,
           placeholder: 'Select one type',
-          options:
-            types?.results?.map(({ name, id }: any) => ({ id: id.toString(), title: name })) || [],
-          onSelect: (val) => setSelectedType(val as string),
+          options: types?.results?.map(({ name, id }: any) => ({ id, title: name })) || [],
+          validate: Yup.number().required('Required'),
         },
-        {
-          id: 'options',
-          title: 'Options',
-          type: FormTypes.Multiple,
-          configuration: !selectedType
-            ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
-            : types?.results
-                .find((x: any) => x.id.toString() === selectedType)
-                .options.map(({ name, type, required, description }: any) => ({
-                  id: name,
-                  title: name,
-                  type: renderType(type),
-                  help: description,
-                  validate:
-                    required.toLowerCase() === 'true'
-                      ? Yup.string().required('Campo obligatorio')
-                      : false,
-                })),
-        },
+        types?.results
+          .reduce((final, { id, options }): FieldProps[] => {
+            const item = options.map(
+              ({ type, name, description, required }: any): FieldProps => ({
+                id: `${id}-${name}`,
+                type: renderType(type),
+                title: name,
+                help: description || '',
+                depends: (props) => id === props.launcher_type,
+                validate:
+                  required.toLowerCase() === 'true'
+                    ? Yup.string().when('launcher_type', {
+                        is: (val) => val === id,
+                        then: Yup.string().required('Required'),
+                        otherwise: Yup.string().notRequired(),
+                      })
+                    : undefined,
+              }),
+            )
+            return [...final, item]
+          }, [])
+          ?.flat(),
       ]),
-    [listenersTypes, types, selectedType],
+    [listenersTypes, types],
   )
 
   return (
@@ -143,6 +146,26 @@ export default () => {
               </IconButton>
             </Tooltip>,
           ]
+        }}
+        transform={(action, rowData) => {
+          if (action === 'new' || action === 'update') {
+            const options = Object.keys(rowData).reduce<any[]>((final, actual) => {
+              if (rowData.launcher_type.toString() !== actual.split('-')[0]) {
+                return final
+              }
+              const item = { name: actual.split('-')[1], value: rowData[actual] }
+              return [...final, item]
+            }, [])
+            return { ...rowData, options }
+          }
+          return rowData
+        }}
+        transformToEdit={(data) => {
+          const options = data.options.reduce((final: {}, { name, value }: any) => {
+            const item = { [`${data.launcher_type}-${name}`]: value }
+            return { ...final, ...item }
+          }, {})
+          return { ...data, ...options }
         }}
       />
     </React.Fragment>

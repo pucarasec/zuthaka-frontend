@@ -23,8 +23,9 @@ export interface WSResponse<T = any> {
 }
 
 type FullCrudProps = Omit<CrudProps, 'response'>
+type RenderType = FormTypes.Input | FormTypes.Number | FormTypes.OnlyTitle | FormTypes.Secure
 
-export const renderType = (type: string): FormTypes => {
+export const renderType = (type?: string): RenderType => {
   if (type === 'string') return FormTypes.Input
   else if (type === 'integer') return FormTypes.Number
 
@@ -39,7 +40,6 @@ export default (props: FullCrudProps) => {
 
   return (
     <Crud
-      {...props}
       actions={{ edit: true, delete: true }}
       response={{
         list: (cList: any) => ({
@@ -54,6 +54,7 @@ export default (props: FullCrudProps) => {
       height={height - 190}
       interaction={{ page: 'page', perPage: 'limit' }}
       idInUrl
+      itemId="id"
       noFilterOptions
       onError={mostrarError(enqueueSnackbar)}
       onFinished={(what, genero) => {
@@ -84,6 +85,7 @@ export default (props: FullCrudProps) => {
         const finalFilter = keys.reduce((acc, it) => ({ ...acc, [it]: query[it].value }), {})
         return finalFilter
       }}
+      {...props}
     />
   )
 }

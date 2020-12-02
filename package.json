@@ -18,7 +18,7 @@
 		"@types/react-dom": "^16.9.0",
 		"@types/react-icons": "^3.0.0",
 		"formik": "^2.1.5",
-		"material-crud": "^0.6.9915",
+		"material-crud": "^0.6.9916",
 		"material-navigator": "^0.1.308",
 		"moment": "^2.29.1",
 		"notistack": "^1.0.0",

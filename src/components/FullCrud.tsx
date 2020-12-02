@@ -54,6 +54,7 @@ export default (props: FullCrudProps) => {
       height={height - 190}
       interaction={{ page: 'page', perPage: 'limit' }}
       idInUrl
+      itemId="id"
       noFilterOptions
       onError={mostrarError(enqueueSnackbar)}
       onFinished={(what, genero) => {

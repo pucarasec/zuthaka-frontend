@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
+import React, { memo, useEffect, useMemo, useRef } from 'react'
 import * as Yup from 'yup'
 import { createColumns, createFields, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
@@ -10,6 +10,7 @@ import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
 import { useHistory } from 'react-router-dom'
+import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
 
 interface ListenerProps {
   id: number
@@ -57,7 +58,6 @@ export default () => {
   }, [loadingC2, loadingTypes, setLoading])
 
   const { pins, savePins, removePins } = usePins('listener')
-  const [selectedType, setSelectedType] = useState('')
 
   const columns = useMemo(
     () =>
@@ -156,47 +156,50 @@ export default () => {
         {
           id: 'c2_id',
           type: FormTypes.Options,
-          validate: Yup.string().required(),
           options:
             c2Types?.results.map(({ name, id }) => ({
-              id: id.toString(),
+              id,
               title: `${name} (${id})`,
             })) || [],
           title: 'C2',
           placeholder: 'Select one C2',
+          validate: Yup.number().required('Required'),
         },
         {
-          id: 'type',
+          id: 'listener_type',
           type: FormTypes.Options,
           title: 'Type',
-          validate: Yup.string().required(),
-          options:
-            listenerTypes?.results.map(({ id, name }) => ({ id: id.toString(), title: name })) ||
-            [],
+          options: listenerTypes?.results.map(({ id, name }) => ({ id, title: name })) || [],
           placeholder: 'Select one type',
-          onSelect: (val) => setSelectedType(val as string),
+          validate: Yup.number().required('Required'),
         },
-        {
-          id: 'options',
-          title: 'Options',
-          type: FormTypes.Multiple,
-          configuration: !selectedType
-            ? [{ id: 'empty', type: FormTypes.OnlyTitle, title: 'Select one type first' }]
-            : listenerTypes?.results
-                .find((x: any) => x.id.toString() === selectedType)
-                .options.map(({ name, type, required, description }: any) => ({
-                  id: name,
-                  title: name,
-                  type: renderType(type),
-                  help: description,
-                  validate:
-                    required.toLowerCase() === 'true'
-                      ? Yup.string().required('Campo obligatorio')
-                      : false,
-                })),
-        },
+        listenerTypes?.results
+          .reduce((final, { id, options }): FieldProps[] => {
+            const item = options.map(
+              ({ type, name, description, required }: any): FieldProps => ({
+                id: `${id}-${name}`,
+                type: renderType(type),
+                title: name,
+                help: description || '',
+                depends: (props) => id === props.listener_type,
+                validate:
+                  required.toLowerCase() === 'true'
+                    ? Yup.string().when('listener_type', {
+                        is: (val) => {
+                          console.log(val, id)
+                          return val === id
+                        },
+                        then: Yup.string().required(),
+                        otherwise: Yup.string().notRequired(),
+                      })
+                    : undefined,
+              }),
+            )
+            return [...final, item]
+          }, [])
+          ?.flat(),
       ]),
-    [c2Types, listenerTypes, selectedType],
+    [c2Types, listenerTypes],
   )
 
   return (
@@ -250,7 +253,24 @@ export default () => {
             }
             return retorno
           }
+          if (action === 'new' || action === 'update') {
+            const options = Object.keys(rowData).reduce<any[]>((final, actual) => {
+              if (rowData.listener_type.toString() !== actual.split('-')[0]) {
+                return final
+              }
+              const item = { name: actual.split('-')[1], value: rowData[actual] }
+              return [...final, item]
+            }, [])
+            return { ...rowData, options }
+          }
           return rowData
+        }}
+        transformToEdit={(data) => {
+          const options = data.options.reduce((final: {}, { name, value }: any) => {
+            const item = { [`${data.listener_type}-${name}`]: value }
+            return { ...final, ...item }
+          }, {})
+          return { ...data, ...options }
         }}
       />
     </React.Fragment>

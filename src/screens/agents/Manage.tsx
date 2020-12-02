@@ -1,8 +1,10 @@
-import { Button } from '@material-ui/core'
+import { Button, makeStyles } from '@material-ui/core'
 import { createFields, Form, FormTypes } from 'material-crud'
 import React, { useMemo } from 'react'
 
 export default () => {
+  const classes = useClasses()
+
   const fields = useMemo(
     () =>
       createFields([
@@ -22,11 +24,22 @@ export default () => {
           {
             id: 'history',
             type: FormTypes.Custom,
-            component: () => <Button>History</Button>,
+            component: () => (
+              <div className={classes.bottonRoot}>
+                <Button>History</Button>
+              </div>
+            ),
           },
         ],
       ]),
-    [],
+    [classes],
   )
   return <Form fields={fields}></Form>
 }
+
+const useClasses = makeStyles(() => ({
+  bottonRoot: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+}))

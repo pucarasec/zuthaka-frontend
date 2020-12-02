@@ -7,6 +7,7 @@ import CTwo from '../screens/CTwo'
 import { FaMoon, FaSignOutAlt, FaSun } from 'react-icons/fa'
 import { useColorTheme } from '../util/Theme'
 import Agents from '../screens/Agents'
+import DetailAgent from '../screens/agents/DetailAgent'
 
 export default () => {
   const { setColor, color } = useColorTheme()
@@ -16,7 +17,8 @@ export default () => {
     { route: '/ctwo', component: <CTwo /> },
     { route: '/listener', component: <Listener /> },
     { route: '/launcher', component: <Launcher /> },
-    { route: '/agents', component: <Agents /> },
+    { route: '/agents', component: <DetailAgent /> },
+    // { route: '/agents', component: <Agents /> },
   ])
 
   const menu = createMenu([

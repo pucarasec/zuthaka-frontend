@@ -6,6 +6,7 @@ export default (name: string) => {
     if (!pins) return []
     return JSON.parse(pins) as string[]
   }, [name])
+  
   const [pins, setPins] = useState(getPins)
 
   const savePins = useCallback(

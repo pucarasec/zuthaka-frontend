@@ -27,6 +27,7 @@ type RenderType = FormTypes.Input | FormTypes.Number | FormTypes.OnlyTitle | For
 
 export const renderType = (type?: string): RenderType => {
   if (type === 'string') return FormTypes.Input
+  else if (type === 'protected-string') return FormTypes.Secure
   else if (type === 'integer') return FormTypes.Number
 
   return FormTypes.OnlyTitle

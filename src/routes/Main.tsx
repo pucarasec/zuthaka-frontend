@@ -11,14 +11,14 @@ import DetailAgent from '../screens/agents/DetailAgent'
 
 export default () => {
   const { setColor, color } = useColorTheme()
-  
+
   const routes = createRoutes([
     { route: '/', component: <Home /> },
     { route: '/ctwo', component: <CTwo /> },
     { route: '/listener', component: <Listener /> },
     { route: '/launcher', component: <Launcher /> },
-    { route: '/agents', component: <DetailAgent /> },
-    // { route: '/agents', component: <Agents /> },
+    { route: '/agents', component: <Agents /> },
+    { route: '/detail_agent', component: <DetailAgent /> },
   ])
 
   const menu = createMenu([
@@ -37,7 +37,6 @@ export default () => {
       onClick: () => console.log('LOGOUT'),
     },
   ])
-
 
   return (
     <Navigator

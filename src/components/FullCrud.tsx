@@ -1,8 +1,8 @@
-import { Crud, FormTypes, useWindowSize } from 'material-crud'
+import { Crud, FormTypes, useWindowSize, CrudRefProps } from 'material-crud'
 import { CrudProps } from 'material-crud/dist/components/Crud'
 import { useNavigatorConfig } from 'material-navigator'
 import { useSnackbar } from 'notistack'
-import React from 'react'
+import React, { forwardRef } from 'react'
 import { mostrarError } from '../util/useAxios'
 
 interface WSOptionsProps {
@@ -33,7 +33,7 @@ export const renderType = (type?: string): RenderType => {
   return FormTypes.OnlyTitle
 }
 
-export default (props: FullCrudProps) => {
+export default forwardRef<CrudRefProps, FullCrudProps>((props, ref) => {
   const { name } = props
   useNavigatorConfig({ title: name, showUser: true })
   const { enqueueSnackbar } = useSnackbar()
@@ -41,6 +41,7 @@ export default (props: FullCrudProps) => {
 
   return (
     <Crud
+      ref={ref}
       actions={{ edit: true, delete: true }}
       response={{
         list: (cList: any) => ({
@@ -89,4 +90,4 @@ export default (props: FullCrudProps) => {
       {...props}
     />
   )
-}
+})

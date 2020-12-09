@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
 import * as Yup from 'yup'
-import { createColumns, createFields, FormTypes, TableTypes } from 'material-crud'
+import { createColumns, createFields, CrudRefProps, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { AiOutlinePushpin, AiFillPushpin } from 'react-icons/ai'
 import usePins from '../hooks/usePins'
@@ -40,7 +40,10 @@ export default () => {
   useNavigatorConfig({ title: 'Listeners', noPadding: false })
   const { setLoading } = useNavigator()
   const { location } = useHistory<any>()
+
+  const crudRef = useRef<CrudRefProps | null>(null)
   const refFilter = useRef(true)
+
   const [typeSelected, setTypeSelected] = useState('')
 
   const [listenerTypes, loadingTypes] = useAxios<WSResponse<any[]>>({
@@ -58,7 +61,7 @@ export default () => {
     setLoading(loadingC2 || loadingTypes)
   }, [loadingC2, loadingTypes, setLoading])
 
-  const { pins, savePins, removePins } = usePins('listener')
+  const { pins, savePins, removePins } = usePins('ListenerPins')
 
   const columns = useMemo(
     () =>
@@ -217,6 +220,7 @@ export default () => {
         </div>
       )}
       <FullCrud
+        ref={(e) => (crudRef.current = e)}
         columns={columns}
         fields={fields}
         filters={filters}
@@ -228,7 +232,10 @@ export default () => {
           return [
             <Tooltip title="Pin to top" key={rowData.id}>
               <IconButton
-                onClick={() => (isMarked ? removePins(rowData.id) : savePins(rowData.id))}>
+                onClick={() => {
+                  isMarked ? removePins(rowData.id) : savePins(rowData.id)
+                  crudRef.current?.refresh()
+                }}>
                 {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
               </IconButton>
             </Tooltip>,

@@ -1,7 +1,7 @@
 import { IconButton, Tooltip } from '@material-ui/core'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
-import React, { useEffect, useMemo } from 'react'
-import { createColumns, useWindowSize } from 'material-crud'
+import React, { useEffect, useMemo, useRef } from 'react'
+import { createColumns, CrudRefProps, useWindowSize } from 'material-crud'
 import FullCrud, { WSResponse } from '../components/FullCrud'
 import Urls from '../util/Urls'
 import useAxios from '../util/useAxios'
@@ -9,6 +9,7 @@ import { FaPlusCircle } from 'react-icons/fa'
 
 export default () => {
   useNavigatorConfig({ title: 'Agents', noPadding: false, goBack: false })
+  const crudRef = useRef<CrudRefProps | null>(null)
   const { height } = useWindowSize()
   const { setLoading, history } = useNavigator()
 
@@ -42,20 +43,16 @@ export default () => {
           title: 'C2',
           width: 1,
           align: 'center',
-          cellComponent: ({ rowData }) => {
-            console.log(c2Types || 'No C2')
-            return c2Types?.results.find((x) => x.id === rowData.c2_type)?.name || '-'
-          },
+          cellComponent: ({ rowData }) =>
+            c2Types?.results.find((x) => x.id === rowData.c2)?.name || '-',
         },
         {
           id: 'listener',
           title: 'Listener',
           width: 1,
           align: 'center',
-          cellComponent: ({ rowData }) => {
-            console.log(listenersTypes || 'No Listener')
-            return listenersTypes?.results.find((x) => x.id === rowData.listener)?.name || '-'
-          },
+          cellComponent: ({ rowData }) =>
+            listenersTypes?.results.find((x) => x.id === rowData.listener)?.name || '-',
         },
         { id: 'username', title: 'Username', width: 2 },
         { id: 'hostname', title: 'Hostname', width: 2 },
@@ -63,8 +60,11 @@ export default () => {
     [c2Types, listenersTypes],
   )
 
+  if (loadingListeners || loadingC2) return null
+
   return (
     <FullCrud
+      ref={(e) => (crudRef.current = e)}
       itemName="hostname"
       height={height - 110}
       columns={columns}

@@ -4,7 +4,7 @@ import Home from '../screens/Home'
 import Launcher from '../screens/Launcher'
 import Listener from '../screens/Listener'
 import CTwo from '../screens/CTwo'
-import { FaMoon, FaSignOutAlt, FaSun } from 'react-icons/fa'
+import { FaDashcube, FaMoon, FaPhoneSquareAlt, FaPlaneDeparture, FaSignOutAlt, FaSolarPanel, FaSun, FaThLarge, FaTools, FaUserSecret } from 'react-icons/fa'
 import { useColorTheme } from '../util/Theme'
 import Agents from '../screens/Agents'
 import DetailAgent from '../screens/agents/DetailAgent'
@@ -22,11 +22,11 @@ export default () => {
   ])
 
   const menu = createMenu([
-    { title: 'Dashboard', route: '/' },
-    { title: 'C2', route: '/ctwo' },
-    { title: 'Listener', route: '/listener' },
-    { title: 'Launcher', route: '/launcher' },
-    { title: 'Agents', route: '/agents' },
+    { title: 'Dashboard', icon: <FaThLarge />, route: '/' },
+    { title: 'C2', icon: <FaTools />, route: '/ctwo' },
+    { title: 'Listener', icon: <FaPhoneSquareAlt />, route: '/listener' },
+    { title: 'Launcher', icon: <FaPlaneDeparture />, route: '/launcher' },
+    { title: 'Agents', icon: <FaUserSecret />, route: '/agents' },
   ])
 
   const userMenu = createUserMenu([
@@ -40,6 +40,7 @@ export default () => {
 
   return (
     <Navigator
+      maintainIcons
       menu={menu}
       routes={routes}
       config={{ title: 'Zuthaka', showUser: true }}

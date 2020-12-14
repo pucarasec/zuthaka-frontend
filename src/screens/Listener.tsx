@@ -154,6 +154,8 @@ export default () => {
     [c2Types, listenerTypes],
   )
 
+  console.log(listenerTypes)
+
   const fields = useMemo(
     () =>
       createFields([
@@ -165,6 +167,7 @@ export default () => {
           placeholder: 'Select one type',
           validate: Yup.number().required('Required'),
           onSelect: (val) => setTypeSelected(val as string),
+          readonly: 'edit',
         },
         {
           id: 'c2_id',

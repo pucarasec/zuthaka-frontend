@@ -72,6 +72,7 @@ export default () => {
           placeholder: 'Select one type',
           options: types?.results.map(({ id, name }: any) => ({ id, title: name })) || [],
           validate: Yup.number().required('Required'),
+          readonly: 'edit',
         },
         types?.results
           .reduce((final, { id, options }): FieldProps[] => {

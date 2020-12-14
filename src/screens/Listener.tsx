@@ -1,6 +1,6 @@
-import React, { memo, useEffect, useMemo, useRef } from 'react'
+import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
 import * as Yup from 'yup'
-import { createColumns, createFields, FormTypes, TableTypes } from 'material-crud'
+import { createColumns, createFields, CrudRefProps, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
 import { AiOutlinePushpin, AiFillPushpin } from 'react-icons/ai'
 import usePins from '../hooks/usePins'
@@ -22,7 +22,7 @@ interface ListenerProps {
 const PinTop = memo(({ id }: any) => {
   const [listener] = useAxios<ListenerProps>({
     onInit: {
-      url: `${Urls.listeners}/${id}`,
+      url: `${Urls.listeners}${id}/`,
     },
   })
 
@@ -30,7 +30,7 @@ const PinTop = memo(({ id }: any) => {
     <div style={{ display: 'flex' }}>
       <span>ID: {listener?.id}</span>
       <span>C2_ID: {listener?.c2_id}</span>
-      <span>Type: {listener?.type}</span>
+      {/* <span>Type: {listener?.type}</span> */}
       <span>Options: {listener?.options.map(({ name, value }) => `${name} (${value})`)}</span>
     </div>
   )
@@ -40,7 +40,11 @@ export default () => {
   useNavigatorConfig({ title: 'Listeners', noPadding: false })
   const { setLoading } = useNavigator()
   const { location } = useHistory<any>()
+
+  const crudRef = useRef<CrudRefProps | null>(null)
   const refFilter = useRef(true)
+
+  const [typeSelected, setTypeSelected] = useState('')
 
   const [listenerTypes, loadingTypes] = useAxios<WSResponse<any[]>>({
     onInit: {
@@ -57,7 +61,7 @@ export default () => {
     setLoading(loadingC2 || loadingTypes)
   }, [loadingC2, loadingTypes, setLoading])
 
-  const { pins, savePins, removePins } = usePins('listener')
+  const { pins, savePins, removePins } = usePins('ListenerPins')
 
   const columns = useMemo(
     () =>
@@ -88,6 +92,14 @@ export default () => {
           width: 1,
         },
         {
+          id: 'type',
+          type: TableTypes.String,
+          title: 'Type',
+          cellComponent: ({ rowData }) =>
+            listenerTypes?.results.find((x) => x.id === rowData.listener_type)?.name || '-',
+          width: 3,
+        },
+        {
           id: 'c2_id',
           type: TableTypes.String,
           title: 'C2',
@@ -100,14 +112,6 @@ export default () => {
           cellComponent: ({ rowData }) =>
             c2Types?.results.find((x) => x.id === rowData.c2_id)?.name || '-',
           width: 1,
-        },
-        {
-          id: 'type',
-          type: TableTypes.String,
-          title: 'Type',
-          cellComponent: ({ rowData }) =>
-            listenerTypes?.results.find((x) => x.id === rowData.listener_type)?.name || '-',
-          width: 3,
         },
       ]),
     [c2Types, listenerTypes],
@@ -150,27 +154,30 @@ export default () => {
     [c2Types, listenerTypes],
   )
 
+  console.log(listenerTypes)
+
   const fields = useMemo(
     () =>
       createFields([
-        {
-          id: 'c2_id',
-          type: FormTypes.Options,
-          options:
-            c2Types?.results.map(({ name, id }) => ({
-              id,
-              title: `${name} (${id})`,
-            })) || [],
-          title: 'C2',
-          placeholder: 'Select one C2',
-          validate: Yup.number().required('Required'),
-        },
         {
           id: 'listener_type',
           type: FormTypes.Options,
           title: 'Type',
           options: listenerTypes?.results.map(({ id, name }) => ({ id, title: name })) || [],
           placeholder: 'Select one type',
+          validate: Yup.number().required('Required'),
+          onSelect: (val) => setTypeSelected(val as string),
+          readonly: 'edit',
+        },
+        {
+          id: 'c2_id',
+          type: FormTypes.Options,
+          options:
+            listenerTypes?.results
+              .find(({ id }) => id.toString() === typeSelected.toString())
+              ?.available_c2s.map(({ c2_id, name }: any) => ({ id: c2_id, title: name })) || [],
+          title: 'C2',
+          placeholder: 'Select one C2',
           validate: Yup.number().required('Required'),
         },
         listenerTypes?.results
@@ -185,11 +192,8 @@ export default () => {
                 validate:
                   required.toLowerCase() === 'true'
                     ? Yup.string().when('listener_type', {
-                        is: (val) => {
-                          console.log(val, id)
-                          return val === id
-                        },
-                        then: Yup.string().required(),
+                        is: (val) => val === id,
+                        then: Yup.string().required('Required'),
                         otherwise: Yup.string().notRequired(),
                       })
                     : undefined,
@@ -199,7 +203,7 @@ export default () => {
           }, [])
           ?.flat(),
       ]),
-    [c2Types, listenerTypes],
+    [listenerTypes, typeSelected],
   )
 
   return (
@@ -219,20 +223,22 @@ export default () => {
         </div>
       )}
       <FullCrud
+        ref={(e) => (crudRef.current = e)}
         columns={columns}
         fields={fields}
         filters={filters}
         description="Listener"
         name="Listener"
         url={Urls.listeners}
-        itemId="id"
-        idInUrl
         extraActions={(rowData: any) => {
           const isMarked = pins.includes(rowData.id)
           return [
             <Tooltip title="Pin to top" key={rowData.id}>
               <IconButton
-                onClick={() => (isMarked ? removePins(rowData.id) : savePins(rowData.id))}>
+                onClick={() => {
+                  isMarked ? removePins(rowData.id) : savePins(rowData.id)
+                  crudRef.current?.refresh()
+                }}>
                 {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
               </IconButton>
             </Tooltip>,
@@ -259,7 +265,10 @@ export default () => {
                 return final
               }
               const item = { name: actual.split('-')[1], value: rowData[actual] }
-              return [...final, item]
+              if (item.value) {
+                return [...final, item]
+              }
+              return final
             }, [])
             return { ...rowData, options }
           }

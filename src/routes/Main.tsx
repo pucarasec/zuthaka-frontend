@@ -7,16 +7,18 @@ import CTwo from '../screens/CTwo'
 import { FaMoon, FaSignOutAlt, FaSun } from 'react-icons/fa'
 import { useColorTheme } from '../util/Theme'
 import Agents from '../screens/Agents'
+import DetailAgent from '../screens/agents/DetailAgent'
 
 export default () => {
   const { setColor, color } = useColorTheme()
-  
+
   const routes = createRoutes([
     { route: '/', component: <Home /> },
     { route: '/ctwo', component: <CTwo /> },
     { route: '/listener', component: <Listener /> },
     { route: '/launcher', component: <Launcher /> },
     { route: '/agents', component: <Agents /> },
+    { route: '/detail_agent', component: <DetailAgent /> },
   ])
 
   const menu = createMenu([
@@ -35,7 +37,6 @@ export default () => {
       onClick: () => console.log('LOGOUT'),
     },
   ])
-
 
   return (
     <Navigator

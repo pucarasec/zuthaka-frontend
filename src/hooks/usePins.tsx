@@ -1,37 +1,30 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import Storage from '../util/Storage'
 
-export default (name: string) => {
-  const getPins = useMemo(() => {
-    const pins = localStorage.getItem(name)
-    if (!pins) return []
-    return JSON.parse(pins) as string[]
-  }, [name])
-  const [pins, setPins] = useState(getPins)
+type StateProps = string[]
 
-  const savePins = useCallback(
-    (value: string | string[]) => {
-      localStorage.setItem(name, JSON.stringify(pins.concat(value)))
-      if (Array.isArray(value)) setPins([...pins, ...value])
-      else setPins([...pins, value])
-    },
-    [name, pins],
-  )
+export default (name: 'LauncherPins' | 'ListenerPins') => {
+  const [pins, setPins] = useState<StateProps>(() => Storage.getItem(name) || [])
 
-  const removePins = useCallback(
-    (value?: string | string[]) => {
-      if (!value) {
-        localStorage.removeItem(name)
-        setPins([])
-      } else {
-        const filtered = pins.filter((val) =>
-          Array.isArray(value) ? !value.includes(val) : val !== value,
-        )
-        localStorage.setItem(name, JSON.stringify(filtered))
-        setPins(filtered)
-      }
-    },
-    [pins, name],
-  )
+  useEffect(() => {
+    Storage.saveItem(name, pins)
+  }, [name, pins])
+
+  const savePins = useCallback((value: string | string[]) => {
+    setPins((total) => {
+      if (Array.isArray(value)) return [...total, ...value]
+      if (total.includes(value)) return total
+      return [...total, value]
+    })
+  }, [])
+
+  const removePins = useCallback((value?: string | string[]) => {
+    if (!value) setPins([])
+    else
+      setPins((total) =>
+        total.filter((val) => (Array.isArray(value) ? !value.includes(val) : val !== value)),
+      )
+  }, [])
 
   return { pins, savePins, removePins }
 }

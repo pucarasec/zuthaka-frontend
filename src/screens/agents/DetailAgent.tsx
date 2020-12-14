@@ -9,12 +9,25 @@ import Manage from './Manage'
 import FileManager from './FileManager'
 import ProcessManager from './ProcessManager'
 import PostExploitation from './PostExploitation'
+import { useLocation } from 'react-router-dom'
+
+interface AgentProps {
+  id: number
+  c2: number
+  listener: number
+  creation_date: Date
+  first_conection: Date
+  last_conection: Date
+  username: string
+  hostname: string
+}
 
 export default () => {
-  useNavigatorConfig({ title: 'Agents', noPadding: true })
+  useNavigatorConfig({ title: 'Agents', noPadding: true, goBack: true })
   const { height } = useWindowSize()
   const classes = useClasses({ height })
   const [value, setValue] = React.useState(0)
+  const { state } = useLocation<AgentProps>()
 
   const handleChange = useCallback((newValue: number) => {
     setValue(newValue)
@@ -58,7 +71,7 @@ export default () => {
           startState="maximised"
           allowTabs={false}
           hideTopBar
-          msg="Zuthaka Terminal"
+          msg={state.hostname}
         />
       </div>
     </div>

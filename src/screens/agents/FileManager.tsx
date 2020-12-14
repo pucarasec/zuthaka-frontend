@@ -1,12 +1,20 @@
 import React from 'react'
-import { FileManager, FileNavigator } from '@opuscapita/react-filemanager'
+import { FullFileBrowser } from 'chonky'
 
 export default () => {
+  const files = [
+    { id: 'lht', name: 'Projects', isDir: true },
+    {
+      id: 'mcd',
+      name: 'chonky-sphere-v2.png',
+      thumbnailUrl: 'https://chonky.io/chonky-sphere-v2.png',
+    },
+  ]
+  const folderChain = [{ id: 'xcv', name: 'Demo', isDir: true }]
+
   return (
     <div style={{ height: '480px' }}>
-      <FileManager>
-        <FileNavigator id="filemanager-1" />
-      </FileManager>
+      <FullFileBrowser files={files} folderChain={folderChain} />
     </div>
   )
 }

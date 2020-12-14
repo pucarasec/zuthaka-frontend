@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from 'react'
-import { createFields, createColumns, TableTypes, FormTypes } from 'material-crud'
+import React, { useEffect, useMemo, useRef } from 'react'
+import { createFields, createColumns, TableTypes, FormTypes, CrudRefProps } from 'material-crud'
 import Urls from '../util/Urls'
 import usePins from '../hooks/usePins'
 import { Tooltip, IconButton } from '@material-ui/core'
@@ -12,6 +12,7 @@ import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
 
 export default () => {
   useNavigatorConfig({ title: 'Launchers', noPadding: false })
+  const crudRef = useRef<CrudRefProps | null>(null)
   const { setLoading } = useNavigator()
 
   const [listenersTypes, loadingListeners] = useAxios<WSResponse>({
@@ -26,7 +27,7 @@ export default () => {
     },
   })
 
-  const { pins, savePins, removePins } = usePins('launcher')
+  const { pins, savePins, removePins } = usePins('LauncherPins')
 
   useEffect(() => {
     setLoading(loadingListeners || loadingTypes)
@@ -113,6 +114,8 @@ export default () => {
     [listenersTypes, types],
   )
 
+  console.log(pins)
+
   return (
     <React.Fragment>
       {pins.length > 0 && (
@@ -130,6 +133,7 @@ export default () => {
         </div>
       )}
       <FullCrud
+        ref={(e) => (crudRef.current = e)}
         description="Launcher"
         name="Launcher"
         url={Urls.launcher}
@@ -141,7 +145,10 @@ export default () => {
           return [
             <Tooltip title="Pin to top" key={rowData.id}>
               <IconButton
-                onClick={() => (isMarked ? removePins(rowData.id) : savePins(rowData.id))}>
+                onClick={() => {
+                  isMarked ? removePins(rowData.id) : savePins(rowData.id)
+                  crudRef.current?.refresh()
+                }}>
                 {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
               </IconButton>
             </Tooltip>,

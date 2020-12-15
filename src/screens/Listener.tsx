@@ -223,7 +223,6 @@ export default () => {
         </div>
       )}
       <FullCrud
-        showHelpIcon
         ref={(e) => (crudRef.current = e)}
         columns={columns}
         fields={fields}

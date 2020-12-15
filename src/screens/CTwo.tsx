@@ -130,6 +130,7 @@ export default () => {
 
   return (
     <FullCrud
+      showHelpIcon
       description="C2 example"
       name="C2"
       url={Urls.c2}

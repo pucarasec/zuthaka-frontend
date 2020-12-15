@@ -6,7 +6,8 @@ export default {
 
   launcher: `${baseUrl}/launchers/`,
   launcher_type: `${baseUrl}/launchers/types/`,
-  //   lauchers:
+  launcher_download: (id: string | number) => `${baseUrl}/launchers/${id}/download/`,
+
   listeners: `${baseUrl}/listeners/`,
   listeners_types: `${baseUrl}/listeners/types/`,
 

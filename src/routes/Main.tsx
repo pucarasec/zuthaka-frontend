@@ -1,10 +1,19 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { createMenu, createRoutes, createUserMenu, Navigator } from 'material-navigator'
 import Home from '../screens/Home'
 import Launcher from '../screens/Launcher'
 import Listener from '../screens/Listener'
 import CTwo from '../screens/CTwo'
-import { FaDashcube, FaMoon, FaPhoneSquareAlt, FaPlaneDeparture, FaSignOutAlt, FaSolarPanel, FaSun, FaThLarge, FaTools, FaUserSecret } from 'react-icons/fa'
+import {
+  FaMoon,
+  FaPhoneSquareAlt,
+  FaPlaneDeparture,
+  FaSignOutAlt,
+  FaSun,
+  FaThLarge,
+  FaTools,
+  FaUserSecret,
+} from 'react-icons/fa'
 import { useColorTheme } from '../util/Theme'
 import Agents from '../screens/Agents'
 import DetailAgent from '../screens/agents/DetailAgent'

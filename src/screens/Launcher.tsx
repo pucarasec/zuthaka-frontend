@@ -27,8 +27,6 @@ export default () => {
     },
   })
 
-  const { pins, savePins, removePins } = usePins('LauncherPins')
-
   useEffect(() => {
     setLoading(loadingListeners || loadingTypes)
   }, [loadingListeners, loadingTypes, setLoading])
@@ -114,67 +112,36 @@ export default () => {
     [listenersTypes, types],
   )
 
-  console.log(pins)
-
   return (
-    <React.Fragment>
-      {pins.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            marginLeft: 100,
-            marginRight: 100,
-            marginBottom: 30,
-          }}>
-          {pins.map((id) => (
-            <span key={id}>{id}</span>
-          ))}
-        </div>
-      )}
-      <FullCrud
-        ref={(e) => (crudRef.current = e)}
-        description="Launcher"
-        name="Launcher"
-        url={Urls.launcher}
-        itemId="id"
-        columns={columns}
-        fields={fields}
-        extraActions={(rowData: any) => {
-          const isMarked = pins.includes(rowData.id)
-          return [
-            <Tooltip title="Pin to top" key={rowData.id}>
-              <IconButton
-                onClick={() => {
-                  isMarked ? removePins(rowData.id) : savePins(rowData.id)
-                  crudRef.current?.refresh()
-                }}>
-                {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
-              </IconButton>
-            </Tooltip>,
-          ]
-        }}
-        transform={(action, rowData) => {
-          if (action === 'new' || action === 'update') {
-            const options = Object.keys(rowData).reduce<any[]>((final, actual) => {
-              if (rowData.launcher_type.toString() !== actual.split('-')[0]) {
-                return final
-              }
-              const item = { name: actual.split('-')[1], value: rowData[actual] }
-              return [...final, item]
-            }, [])
-            return { ...rowData, options }
-          }
-          return rowData
-        }}
-        transformToEdit={(data) => {
-          const options = data.options.reduce((final: {}, { name, value }: any) => {
-            const item = { [`${data.launcher_type}-${name}`]: value }
-            return { ...final, ...item }
-          }, {})
-          return { ...data, ...options }
-        }}
-      />
-    </React.Fragment>
+    <FullCrud
+      ref={(e) => (crudRef.current = e)}
+      description="Launcher"
+      name="Launcher"
+      url={Urls.launcher}
+      itemId="id"
+      columns={columns}
+      actions={{ edit: true, delete: true, pinToTop: true }}
+      fields={fields}
+      transform={(action, rowData) => {
+        if (action === 'new' || action === 'update') {
+          const options = Object.keys(rowData).reduce<any[]>((final, actual) => {
+            if (rowData.launcher_type.toString() !== actual.split('-')[0]) {
+              return final
+            }
+            const item = { name: actual.split('-')[1], value: rowData[actual] }
+            return [...final, item]
+          }, [])
+          return { ...rowData, options }
+        }
+        return rowData
+      }}
+      transformToEdit={(data) => {
+        const options = data.options.reduce((final: {}, { name, value }: any) => {
+          const item = { [`${data.launcher_type}-${name}`]: value }
+          return { ...final, ...item }
+        }, {})
+        return { ...data, ...options }
+      }}
+    />
   )
 }

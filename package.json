@@ -18,7 +18,7 @@
 		"chonky": "^2.0.5",
 		"chonky-icon-fontawesome": "^2.0.5",
 		"formik": "^2.1.5",
-		"material-crud": "^0.6.9921",
+		"material-crud": "0.6.9932",
 		"material-navigator": "0.1.310",
 		"moment": "^2.29.1",
 		"notistack": "^1.0.0",

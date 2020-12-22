@@ -132,6 +132,7 @@ export default () => {
     <FullCrud
       description="C2 example"
       name="C2"
+      actions={{ edit: true, delete: true, pinToTop: true }}
       url={Urls.c2}
       filters={filters}
       columns={columns}

@@ -19,23 +19,6 @@ interface ListenerProps {
   options: { name: string; value: string }[]
 }
 
-const PinTop = memo(({ id }: any) => {
-  const [listener] = useAxios<ListenerProps>({
-    onInit: {
-      url: `${Urls.listeners}${id}/`,
-    },
-  })
-
-  return (
-    <div style={{ display: 'flex' }}>
-      <span>ID: {listener?.id}</span>
-      <span>C2_ID: {listener?.c2_id}</span>
-      {/* <span>Type: {listener?.type}</span> */}
-      <span>Options: {listener?.options.map(({ name, value }) => `${name} (${value})`)}</span>
-    </div>
-  )
-})
-
 export default () => {
   useNavigatorConfig({ title: 'Listeners', noPadding: false })
   const { setLoading } = useNavigator()
@@ -60,8 +43,6 @@ export default () => {
   useEffect(() => {
     setLoading(loadingC2 || loadingTypes)
   }, [loadingC2, loadingTypes, setLoading])
-
-  const { pins, savePins, removePins } = usePins('ListenerPins')
 
   const columns = useMemo(
     () =>
@@ -154,8 +135,6 @@ export default () => {
     [c2Types, listenerTypes],
   )
 
-  console.log(listenerTypes)
-
   const fields = useMemo(
     () =>
       createFields([
@@ -207,81 +186,47 @@ export default () => {
   )
 
   return (
-    <React.Fragment>
-      {pins.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            marginLeft: 100,
-            marginRight: 100,
-            marginBottom: 30,
-          }}>
-          {pins.map((id) => (
-            <PinTop key={id} id={id} />
-          ))}
-        </div>
-      )}
-      <FullCrud
-        ref={(e) => (crudRef.current = e)}
-        columns={columns}
-        fields={fields}
-        filters={filters}
-        description="Listener"
-        name="Listener"
-        url={Urls.listeners}
-        extraActions={(rowData: any) => {
-          const isMarked = pins.includes(rowData.id)
-          return [
-            <Tooltip title="Pin to top" key={rowData.id}>
-              <IconButton
-                onClick={() => {
-                  isMarked ? removePins(rowData.id) : savePins(rowData.id)
-                  crudRef.current?.refresh()
-                }}>
-                {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
-              </IconButton>
-            </Tooltip>,
-          ]
-        }}
-        // showSelecting
-        rightToolbar={({ rowsSelected }) => (
-          <IconButton onClick={() => savePins(rowsSelected.map(({ id }) => id))}>
-            <FaRegBookmark />
-          </IconButton>
-        )}
-        transform={(action, rowData) => {
-          if (action === 'query') {
-            const retorno = { ...rowData, ...rowData.filter }
-            if (refFilter.current && location?.state?.c2_id) {
-              retorno.c2_id = location.state.c2_id
-              refFilter.current = false
-            }
-            return retorno
+    <FullCrud
+      ref={(e) => (crudRef.current = e)}
+      columns={columns}
+      fields={fields}
+      filters={filters}
+      description="Listener"
+      name="Listener"
+      itemName={'interface'}
+      actions={{ edit: true, delete: true, pinToTop: true }}
+      url={Urls.listeners}
+      transform={(action, rowData) => {
+        if (action === 'query') {
+          const retorno = { ...rowData, ...rowData.filter }
+          if (refFilter.current && location?.state?.c2_id) {
+            retorno.c2_id = location.state.c2_id
+            refFilter.current = false
           }
-          if (action === 'new' || action === 'update') {
-            const options = Object.keys(rowData).reduce<any[]>((final, actual) => {
-              if (rowData.listener_type.toString() !== actual.split('-')[0]) {
-                return final
-              }
-              const item = { name: actual.split('-')[1], value: rowData[actual] }
-              if (item.value) {
-                return [...final, item]
-              }
+          return retorno
+        }
+        if (action === 'new' || action === 'update') {
+          const options = Object.keys(rowData).reduce<any[]>((final, actual) => {
+            if (rowData.listener_type.toString() !== actual.split('-')[0]) {
               return final
-            }, [])
-            return { ...rowData, options }
-          }
-          return rowData
-        }}
-        transformToEdit={(data) => {
-          const options = data.options.reduce((final: {}, { name, value }: any) => {
-            const item = { [`${data.listener_type}-${name}`]: value }
-            return { ...final, ...item }
-          }, {})
-          return { ...data, ...options }
-        }}
-      />
-    </React.Fragment>
+            }
+            const item = { name: actual.split('-')[1], value: rowData[actual] }
+            if (item.value) {
+              return [...final, item]
+            }
+            return final
+          }, [])
+          return { ...rowData, options }
+        }
+        return rowData
+      }}
+      transformToEdit={(data) => {
+        const options = data.options.reduce((final: {}, { name, value }: any) => {
+          const item = { [`${data.listener_type}-${name}`]: value }
+          return { ...final, ...item }
+        }, {})
+        return { ...data, ...options }
+      }}
+    />
   )
 }

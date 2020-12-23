@@ -28,10 +28,40 @@ export default () => {
     () =>
       createColumns([
         {
+          id: 'id',
+          title: 'ID',
+          type: TableTypes.String,
+          width: 1,
+          align: 'center',
+        },
+        {
+          id: 'c2_type',
+          title: 'C2 ID',
+          type: TableTypes.String,
+          width: 1,
+          align: 'center',
+        },
+        {
+          id: 'type',
+          title: 'Type',
+          type: TableTypes.String,
+          cellComponent: ({ rowData }) =>
+            types?.results.find((x) => x.id === rowData.c2_type)?.name || '-',
+          width: 4,
+          align: 'center',
+        },
+        {
+          id: 'creation_date',
+          title: 'Date',
+          type: TableTypes.Date,
+          width: 3,
+        },
+        {
           id: 'expand',
           title: 'Options',
           type: TableTypes.Custom,
           height: 70,
+          width: 1,
           cellComponent: ({ expandRow, isExpanded }) => {
             return (
               <IconButton onClick={expandRow}>
@@ -45,18 +75,6 @@ export default () => {
               : rowData?.options.map(({ name, value }: any) => (
                   <span key={name}>{`${name} (${value})`}</span>
                 )),
-        },
-        {
-          id: 'type',
-          title: 'Type',
-          type: TableTypes.String,
-          cellComponent: ({ rowData }) =>
-            types?.results.find((x) => x.id === rowData.c2_type)?.name || '-',
-        },
-        {
-          id: 'creation_date',
-          title: 'Date',
-          type: TableTypes.String,
         },
       ]),
     [types],
@@ -140,7 +158,7 @@ export default () => {
       extraActions={(rowData) => {
         return [
           <Tooltip title="Go to listeners" key={rowData.id}>
-            <IconButton onClick={() => push('/listener', { c2_id: rowData.id })}>
+            <IconButton size="small" onClick={() => push('/listener', { c2_id: rowData.id })}>
               <FaEye />
             </IconButton>
           </Tooltip>,

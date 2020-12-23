@@ -1,14 +1,20 @@
 import React, { useEffect, useMemo, useRef } from 'react'
-import { createFields, createColumns, TableTypes, FormTypes, CrudRefProps } from 'material-crud'
+import {
+  createFields,
+  createColumns,
+  TableTypes,
+  FormTypes,
+  CrudRefProps,
+  callWs,
+} from 'material-crud'
 import Urls from '../util/Urls'
-import usePins from '../hooks/usePins'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
 import * as Yup from 'yup'
 import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
+import { FaDownload } from 'react-icons/fa'
 
 export default () => {
   useNavigatorConfig({ title: 'Launchers', noPadding: false })
@@ -38,6 +44,7 @@ export default () => {
           id: 'id',
           type: TableTypes.String,
           title: 'ID',
+          align: 'center',
         },
         {
           id: 'launcher_name',
@@ -60,8 +67,53 @@ export default () => {
             listenersTypes?.results.find((x: any) => x.id === rowData.listener_id)?.name || '-',
           width: 1,
         },
+        {
+          id: 'creation_date',
+          title: 'Date',
+          type: TableTypes.Date,
+          align: 'center',
+        },
       ]),
     [types, listenersTypes],
+  )
+
+  const filters = useMemo(
+    () =>
+      createFields([
+        {
+          id: 'listener_id',
+          title: 'Listener',
+          type: FormTypes.Options,
+          options:
+            listenersTypes?.results.map(({ name, id }: any) => ({
+              id,
+              title: `${name} (${id})`,
+            })) || [],
+          placeholder: 'Select one listener',
+        },
+        {
+          id: 'launcher_type',
+          title: 'Launcher',
+          type: FormTypes.Options,
+          options:
+            types?.results.map(({ name, id }: any) => ({
+              id,
+              title: `${name} (${id})`,
+            })) || [],
+          placeholder: 'Select one launcher',
+        },
+        {
+          id: 'created_since',
+          type: FormTypes.Date,
+          title: 'Created Since',
+        },
+        {
+          id: 'created_until',
+          type: FormTypes.Date,
+          title: 'Created Until',
+        },
+      ]),
+    [listenersTypes, types],
   )
 
   const fields = useMemo(
@@ -118,11 +170,42 @@ export default () => {
       description="Launcher"
       name="Launcher"
       url={Urls.launcher}
-      itemId="id"
       columns={columns}
-      actions={{ edit: true, delete: true, pinToTop: true }}
       fields={fields}
+      filters={filters}
+      extraActions={(rowData: any) => [
+        <Tooltip title="Download" key={`${rowData.id}-1`}>
+          <IconButton
+            size="small"
+            onClick={async () => {
+              setLoading(true)
+              const { response } = await callWs<Blob>({
+                url: Urls.launcher_download(rowData.id),
+                responseType: 'blob',
+              })
+              if (response) {
+                const url = window.URL.createObjectURL(new Blob([response]))
+                const link = document.createElement('a')
+                link.href = url
+                link.setAttribute(
+                  'download',
+                  `${types?.results.find((x: any) => x.id === rowData.id)?.name}.ps1`,
+                )
+                document.body.appendChild(link)
+                link.click()
+                link.remove()
+              }
+              setLoading(false)
+            }}>
+            <FaDownload />
+          </IconButton>
+        </Tooltip>,
+      ]}
       transform={(action, rowData) => {
+        if (action === 'query') {
+          const retorno = { ...rowData, ...rowData.filter }
+          return retorno
+        }
         if (action === 'new' || action === 'update') {
           const options = Object.keys(rowData).reduce<any[]>((final, actual) => {
             if (rowData.launcher_type.toString() !== actual.split('-')[0]) {

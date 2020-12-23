@@ -1,11 +1,9 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as Yup from 'yup'
 import { createColumns, createFields, CrudRefProps, FormTypes, TableTypes } from 'material-crud'
 import { IconButton, Tooltip } from '@material-ui/core'
-import { AiOutlinePushpin, AiFillPushpin } from 'react-icons/ai'
-import usePins from '../hooks/usePins'
 import Urls from '../util/Urls'
-import { FaChevronCircleDown, FaChevronCircleUp, FaRegBookmark } from 'react-icons/fa'
+import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
@@ -48,14 +46,55 @@ export default () => {
     () =>
       createColumns([
         {
+          id: 'id',
+          type: TableTypes.String,
+          title: 'ID',
+          width: 1,
+          align: 'center',
+        },
+        {
+          id: 'type',
+          type: TableTypes.String,
+          title: 'Type',
+          cellComponent: ({ rowData }) =>
+            listenerTypes?.results.find((x) => x.id === rowData.listener_type)?.name || '-',
+          width: 2,
+          align: 'center',
+        },
+        {
+          id: 'c2_id',
+          type: TableTypes.String,
+          title: 'C2',
+          width: 1,
+          align: 'center',
+        },
+        {
+          id: 'c2_name',
+          type: TableTypes.String,
+          title: 'C2 Name',
+          cellComponent: ({ rowData }) =>
+            c2Types?.results.find((x) => x.id === rowData.c2_id)?.name || '-',
+          width: 1,
+        },
+        {
+          id: 'creation_date',
+          title: 'Date',
+          type: TableTypes.Date,
+          width: 3,
+          align: 'flex-end',
+        },
+        {
           id: 'options',
           title: 'Options',
           type: TableTypes.Custom,
-          height: 100,
+          height: 80,
+          align: 'flex-end',
           cellComponent: ({ expandRow, isExpanded }) => (
-            <IconButton onClick={expandRow}>
-              {isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
-            </IconButton>
+            <Tooltip title="Open options">
+              <IconButton size="small" onClick={expandRow}>
+                {isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
+              </IconButton>
+            </Tooltip>
           ),
           content: (rowData) =>
             !rowData?.options.length
@@ -65,34 +104,6 @@ export default () => {
                     {name} ({value})
                   </span>
                 )),
-        },
-        {
-          id: 'id',
-          type: TableTypes.String,
-          title: 'ID',
-          width: 1,
-        },
-        {
-          id: 'type',
-          type: TableTypes.String,
-          title: 'Type',
-          cellComponent: ({ rowData }) =>
-            listenerTypes?.results.find((x) => x.id === rowData.listener_type)?.name || '-',
-          width: 3,
-        },
-        {
-          id: 'c2_id',
-          type: TableTypes.String,
-          title: 'C2',
-          width: 1,
-        },
-        {
-          id: 'c2_name',
-          type: TableTypes.String,
-          title: 'C2 Name',
-          cellComponent: ({ rowData }) =>
-            c2Types?.results.find((x) => x.id === rowData.c2_id)?.name || '-',
-          width: 1,
         },
       ]),
     [c2Types, listenerTypes],

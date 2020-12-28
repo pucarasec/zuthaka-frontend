@@ -27,7 +27,8 @@ export default () => {
     { route: '/listener', component: <Listener /> },
     { route: '/launcher', component: <Launcher /> },
     { route: '/agents', component: <Agents /> },
-    { route: '/detail_agent', component: <DetailAgent /> },
+    { route: '/detail_agent', component: <DetailAgent detached={false} /> },
+    { route: '/detached_agent', component: <DetailAgent detached /> },
   ])
 
   const menu = createMenu([

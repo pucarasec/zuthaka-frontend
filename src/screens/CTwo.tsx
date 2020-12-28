@@ -150,6 +150,7 @@ export default () => {
     <FullCrud
       description="C2 example"
       name="C2"
+      actions={{ edit: true, delete: true, pinToTop: true }}
       url={Urls.c2}
       filters={filters}
       columns={columns}
@@ -157,7 +158,7 @@ export default () => {
       extraActions={(rowData) => {
         return [
           <Tooltip title="Go to listeners" key={rowData.id}>
-            <IconButton onClick={() => push('/listener', { c2_id: rowData.id })}>
+            <IconButton size="small" onClick={() => push('/listener', { c2_id: rowData.id })}>
               <FaEye />
             </IconButton>
           </Tooltip>,

@@ -1,6 +1,6 @@
-import { AppBar, makeStyles, Tab, Tabs } from '@material-ui/core'
+import { AppBar, makeStyles, Tab, Tabs, IconButton } from '@material-ui/core'
 import { useNavigatorConfig } from 'material-navigator'
-import React, { useCallback } from 'react'
+import React, { useCallback, useLayoutEffect, useState } from 'react'
 import SwipeableViews from 'react-swipeable-views'
 import TabPanel from '../../components/TabPanel'
 import Terminal from 'terminal-in-react'
@@ -10,6 +10,8 @@ import FileManager from './FileManager'
 import ProcessManager from './ProcessManager'
 import PostExploitation from './PostExploitation'
 import { useLocation } from 'react-router-dom'
+import { FaExternalLinkAlt } from 'react-icons/fa'
+import Storage from '../../util/Storage'
 
 interface AgentProps {
   id: number
@@ -22,21 +24,38 @@ interface AgentProps {
   hostname: string
 }
 
-export default () => {
-  useNavigatorConfig({ title: 'Agents', noPadding: true, goBack: true })
+interface Props {
+  detached?: boolean
+}
+
+export default ({ detached }: Props) => {
+  useNavigatorConfig(
+    detached ? { onlyContent: true } : { title: 'Agents', noPadding: true, goBack: true },
+  )
   const { height } = useWindowSize()
   const classes = useClasses({ height })
-  const [value, setValue] = React.useState(0)
+  const [value, setValue] = useState(0)
   const { state } = useLocation<AgentProps>()
 
   const handleChange = useCallback((newValue: number) => {
     setValue(newValue)
   }, [])
 
+  useLayoutEffect(() => {
+    const saveSize = () => {
+      if (detached) {
+        Storage.saveItem('DetachedSize', { height: window.innerHeight, width: window.innerWidth })
+      }
+    }
+    window.addEventListener('resize', saveSize)
+    return () => window.removeEventListener('resize', saveSize)
+  }, [detached])
+
   return (
     <div className={classes.root}>
-      <AppBar position="static" color="default">
+      <AppBar position="static" color="default" className={classes.appbar}>
         <Tabs
+          className={classes.tabbar}
           value={value}
           onChange={(_, newValue) => handleChange(newValue)}
           indicatorColor="primary"
@@ -46,6 +65,19 @@ export default () => {
           <Tab label="Process Manager" />
           <Tab label="Post-Exploitation" />
         </Tabs>
+        {!detached && (
+          <IconButton
+            size="small"
+            onClick={() => {
+              const size = Storage.getItem<{ width: number; height: number }>('DetachedSize')
+              const sizeString = size?.height
+                ? `height=${size.height},width=${size.width}`
+                : 'height=600,width=800'
+              window.open(window.location.origin + '/detached_agent', '_blank', sizeString)
+            }}>
+            <FaExternalLinkAlt />
+          </IconButton>
+        )}
       </AppBar>
       <SwipeableViews className={classes.tabs} index={value} onChangeIndex={handleChange}>
         <TabPanel value={value} index={0}>
@@ -71,7 +103,7 @@ export default () => {
           startState="maximised"
           allowTabs={false}
           hideTopBar
-          msg={state.hostname}
+          msg={state?.hostname}
         />
       </div>
     </div>
@@ -79,6 +111,14 @@ export default () => {
 }
 
 const useClasses = makeStyles((theme) => ({
+  appbar: {
+    display: 'flex',
+    flexDirection: 'row',
+    paddingRight: theme.spacing(1),
+  },
+  tabbar: {
+    flex: 1,
+  },
   root: {
     // backgroundColor: theme.palette.background.paper,
   },

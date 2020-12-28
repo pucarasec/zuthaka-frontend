@@ -8,9 +8,7 @@ import {
   callWs,
 } from 'material-crud'
 import Urls from '../util/Urls'
-import usePins from '../hooks/usePins'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
@@ -34,8 +32,6 @@ export default () => {
       url: Urls.launcher_type,
     },
   })
-
-  const { pins, savePins, removePins } = usePins('LauncherPins')
 
   useEffect(() => {
     setLoading(loadingListeners || loadingTypes)
@@ -169,95 +165,66 @@ export default () => {
   )
 
   return (
-    <React.Fragment>
-      {pins.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            marginLeft: 100,
-            marginRight: 100,
-            marginBottom: 30,
-          }}>
-          {pins.map((id) => (
-            <span key={id}>{id}</span>
-          ))}
-        </div>
-      )}
-      <FullCrud
-        ref={(e) => (crudRef.current = e)}
-        description="Launcher"
-        name="Launcher"
-        url={Urls.launcher}
-        columns={columns}
-        fields={fields}
-        filters={filters}
-        extraActions={(rowData: any) => {
-          const isMarked = pins.includes(rowData.id)
-          return [
-            <Tooltip title="Pin to top" key={rowData.id}>
-              <IconButton
-                size="small"
-                onClick={() => {
-                  isMarked ? removePins(rowData.id) : savePins(rowData.id)
-                  crudRef.current?.refresh()
-                }}>
-                {isMarked ? <AiFillPushpin /> : <AiOutlinePushpin />}
-              </IconButton>
-            </Tooltip>,
-            <Tooltip title="Download" key={`${rowData.id}-1`}>
-              <IconButton
-                size="small"
-                onClick={async () => {
-                  setLoading(true)
-                  const { response } = await callWs<Blob>({
-                    url: Urls.launcher_download(rowData.id),
-                    responseType: 'blob',
-                  })
-                  if (response) {
-                    const url = window.URL.createObjectURL(new Blob([response]))
-                    const link = document.createElement('a')
-                    link.href = url
-                    link.setAttribute(
-                      'download',
-                      `${types?.results.find((x: any) => x.id === rowData.id)?.name}.ps1`,
-                    )
-                    document.body.appendChild(link)
-                    link.click()
-                    link.remove()
-                  }
-                  setLoading(false)
-                }}>
-                <FaDownload />
-              </IconButton>
-            </Tooltip>,
-          ]
-        }}
-        transform={(action, rowData) => {
-          if (action === 'query') {
-            const retorno = { ...rowData, ...rowData.filter }
-            return retorno
-          }
-          if (action === 'new' || action === 'update') {
-            const options = Object.keys(rowData).reduce<any[]>((final, actual) => {
-              if (rowData.launcher_type.toString() !== actual.split('-')[0]) {
-                return final
+    <FullCrud
+      ref={(e) => (crudRef.current = e)}
+      description="Launcher"
+      name="Launcher"
+      url={Urls.launcher}
+      columns={columns}
+      fields={fields}
+      filters={filters}
+      extraActions={(rowData: any) => [
+        <Tooltip title="Download" key={`${rowData.id}-1`}>
+          <IconButton
+            size="small"
+            onClick={async () => {
+              setLoading(true)
+              const { response } = await callWs<Blob>({
+                url: Urls.launcher_download(rowData.id),
+                responseType: 'blob',
+              })
+              if (response) {
+                const url = window.URL.createObjectURL(new Blob([response]))
+                const link = document.createElement('a')
+                link.href = url
+                link.setAttribute(
+                  'download',
+                  `${types?.results.find((x: any) => x.id === rowData.id)?.name}.ps1`,
+                )
+                document.body.appendChild(link)
+                link.click()
+                link.remove()
               }
-              const item = { name: actual.split('-')[1], value: rowData[actual] }
-              return [...final, item]
-            }, [])
-            return { ...rowData, options }
-          }
-          return rowData
-        }}
-        transformToEdit={(data) => {
-          const options = data.options.reduce((final: {}, { name, value }: any) => {
-            const item = { [`${data.launcher_type}-${name}`]: value }
-            return { ...final, ...item }
-          }, {})
-          return { ...data, ...options }
-        }}
-      />
-    </React.Fragment>
+              setLoading(false)
+            }}>
+            <FaDownload />
+          </IconButton>
+        </Tooltip>,
+      ]}
+      transform={(action, rowData) => {
+        if (action === 'query') {
+          const retorno = { ...rowData, ...rowData.filter }
+          return retorno
+        }
+        if (action === 'new' || action === 'update') {
+          const options = Object.keys(rowData).reduce<any[]>((final, actual) => {
+            if (rowData.launcher_type.toString() !== actual.split('-')[0]) {
+              return final
+            }
+            const item = { name: actual.split('-')[1], value: rowData[actual] }
+            return [...final, item]
+          }, [])
+          return { ...rowData, options }
+        }
+        return rowData
+      }}
+      transformToEdit={(data) => {
+        const options = data.options.reduce((final: {}, { name, value }: any) => {
+          const item = { [`${data.launcher_type}-${name}`]: value }
+          return { ...final, ...item }
+        }, {})
+        return { ...data, ...options }
+      }}
+    />
   )
 }

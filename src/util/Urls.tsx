@@ -12,4 +12,6 @@ export default {
   listeners_types: `${baseUrl}/listeners/types/`,
 
   agents: `${baseUrl}/agents/`,
+
+  login: `http://192.168.102.50:8001/api-token-auth/`,
 }

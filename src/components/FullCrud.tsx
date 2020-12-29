@@ -35,7 +35,7 @@ export const renderType = (type?: string): RenderType => {
 
 export default forwardRef<CrudRefProps, FullCrudProps>((props, ref) => {
   const { name } = props
-  useNavigatorConfig({ title: name, showUser: true })
+  useNavigatorConfig({ title: name })
   const { enqueueSnackbar } = useSnackbar()
   const { height } = useWindowSize()
 

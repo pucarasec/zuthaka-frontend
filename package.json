@@ -36,6 +36,7 @@
 		"react-router-dom": "^5.2.0",
 		"react-scripts": "3.4.3",
 		"react-swipeable-views": "^0.13.9",
+		"socket.io-client": "^3.0.4",
 		"terminal-in-react": "^4.3.1",
 		"typescript": "^3.9.7",
 		"yup": "^0.29.3"

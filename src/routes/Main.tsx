@@ -17,6 +17,8 @@ import {
 import { useColorTheme } from '../util/Theme'
 import Agents from '../screens/Agents'
 import DetailAgent from '../screens/agents/DetailAgent'
+import { SocketProvider } from '../util/SocketContext'
+import Urls from '../util/Urls'
 
 export default () => {
   const { setColor, color } = useColorTheme()
@@ -49,22 +51,24 @@ export default () => {
   ])
 
   return (
-    <Navigator
-      maintainIcons
-      menu={menu}
-      routes={routes}
-      config={{ title: 'Zuthaka', showUser: true }}
-      userMenu={userMenu}
-      extraIcons={[
-        {
-          id: 'sun',
-          icon: color === 'dark' ? <FaSun /> : <FaMoon />,
-          tooltip: 'Change dark/light theme',
-          onClick: () => {
-            setColor((color) => (color === 'dark' ? 'light' : 'dark'))
+    <SocketProvider url={Urls.socket}>
+      <Navigator
+        maintainIcons
+        menu={menu}
+        routes={routes}
+        config={{ title: 'Zuthaka', showUser: true }}
+        userMenu={userMenu}
+        extraIcons={[
+          {
+            id: 'sun',
+            icon: color === 'dark' ? <FaSun /> : <FaMoon />,
+            tooltip: 'Change dark/light theme',
+            onClick: () => {
+              setColor((color) => (color === 'dark' ? 'light' : 'dark'))
+            },
           },
-        },
-      ]}
-    />
+        ]}
+      />
+    </SocketProvider>
   )
 }

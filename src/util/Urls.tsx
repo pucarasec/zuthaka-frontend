@@ -1,6 +1,7 @@
 const baseUrl = process.env.REACT_APP_BASE_URL as string
 
 export default {
+  socket: baseUrl,
   c2: `${baseUrl}/c2/`,
   c2_types: `${baseUrl}/c2/types/`,
 

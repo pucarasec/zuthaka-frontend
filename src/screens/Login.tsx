@@ -11,10 +11,10 @@ export interface LoginResponse {
 
 export default () => {
   const { setUser, user } = useUser()
-  useNavigatorConfig({ title: 'Sign in', noSearch: true, showUser: !!user })
+  useNavigatorConfig({ title: 'Sign in', noSearch: true, showUser: !!user, noDrawerMenu: !user })
   const history = useHistory()
-  const { state } = useLocation<{ from: string }>()
-  const { from } = state || { from: { pathname: '/' } }
+  const { state } = useLocation<{ from: { pathname: string } }>()
+  const from = state?.from?.pathname || '/'
   const [response, loading, callLogin] = useAxios<LoginResponse>()
 
   useEffect(() => {
@@ -22,6 +22,7 @@ export default () => {
       history.replace(from)
     } else if (response) {
       setUser(response)
+      history.replace(from)
     }
   }, [setUser, history, response, from, user])
 

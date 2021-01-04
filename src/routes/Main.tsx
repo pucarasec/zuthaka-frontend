@@ -18,6 +18,8 @@ import {
 import { useColorTheme } from '../util/Theme'
 import Agents from '../screens/Agents'
 import DetailAgent from '../screens/agents/DetailAgent'
+import { SocketProvider } from '../util/SocketContext'
+import Urls from '../util/Urls'
 import { useUser } from 'material-crud'
 import Login from '../screens/Login'
 
@@ -58,13 +60,13 @@ export default () => {
   ])
 
   return (
+    // <SocketProvider url={Urls.socket}>
     <Navigator
       maintainIcons
       menu={menu}
       routes={routes}
       config={{ title: 'Zuthaka', showUser: !!user }}
       userMenu={userMenu}
-      loginPath="/login"
       extraIcons={[
         {
           id: 'sun',
@@ -76,5 +78,6 @@ export default () => {
         },
       ]}
     />
+    // </SocketProvider>
   )
 }

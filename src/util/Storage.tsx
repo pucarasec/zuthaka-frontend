@@ -1,5 +1,3 @@
-import { object } from 'yup'
-
 const Keys = {
   User: 'User',
   LauncherPins: 'LauncherPins',

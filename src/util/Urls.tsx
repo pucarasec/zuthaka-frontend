@@ -1,6 +1,7 @@
 const baseUrl = process.env.REACT_APP_BASE_URL as string
 
 export default {
+  socket: baseUrl,
   c2: `${baseUrl}/c2/`,
   c2_types: `${baseUrl}/c2/types/`,
 
@@ -13,5 +14,5 @@ export default {
 
   agents: `${baseUrl}/agents/`,
 
-  login: `http://192.168.102.50:8001/api-token-auth/`,
+  login: `${baseUrl}/api-token-auth/`,
 }

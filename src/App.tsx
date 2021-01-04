@@ -17,6 +17,7 @@ export default () => {
         <CrudProvider
           lang={enUS}
           user={user}
+          headers={{ authorization: user ? `Bearer ${user.token}` : undefined }}
           onUser={(newUser) => {
             setUser(newUser)
             if (newUser) Storage.saveItem('User', newUser)

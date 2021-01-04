@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useLayoutEffect, useMemo } from 'react'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import * as am4core from '@amcharts/amcharts4/core'
 import * as am4charts from '@amcharts/amcharts4/charts'
@@ -12,7 +12,6 @@ import { useColorTheme } from '../util/Theme'
 
 export default () => {
   const { color } = useColorTheme()
-  am4core.useTheme(am4themes_animated)
 
   useNavigatorConfig({ title: 'Dashboard', noPadding: false })
   const { setLoading } = useNavigator()
@@ -54,8 +53,15 @@ export default () => {
   }, [setLoading, loadingC2, loadingC2_types, loadingListener, loadingListener_types])
 
   useLayoutEffect(() => {
-    if (color === 'dark') am4core.useTheme(am4themes_dark)
-    else am4core.useTheme(am4themes_spiritedaway)
+    if (color === 'dark') {
+      am4core.unuseAllThemes()
+      am4core.useTheme(am4themes_animated)
+      am4core.useTheme(am4themes_dark)
+    } else {
+      am4core.unuseAllThemes()
+      am4core.useTheme(am4themes_animated)
+      am4core.useTheme(am4themes_spiritedaway)
+    }
 
     const container = am4core.create('chartdiv', am4core.Container)
     container.width = am4core.percent(100)

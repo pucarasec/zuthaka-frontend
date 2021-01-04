@@ -5,21 +5,21 @@ import { useHistory, useLocation } from 'react-router-dom'
 import { useNavigatorConfig } from 'material-navigator'
 import useAxios from '../util/useAxios'
 
-interface LoginResponse {
-  token: string
+export interface LoginResponse {
+  token: string | null
 }
 
 export default () => {
-  useNavigatorConfig({ title: 'Sign in', noSearch: true })
   const { setUser, user } = useUser()
+  useNavigatorConfig({ title: 'Sign in', noSearch: true, showUser: !!user })
   const history = useHistory()
   const { state } = useLocation<{ from: string }>()
   const { from } = state || { from: { pathname: '/' } }
-  const [response, loading, call] = useAxios<LoginResponse>()
+  const [response, loading, callLogin] = useAxios<LoginResponse>()
 
   useEffect(() => {
     if (user) {
-      history.push(from)
+      history.replace(from)
     } else if (response) {
       setUser(response)
     }
@@ -39,7 +39,7 @@ export default () => {
       <CenteredCard loading={loading} title="Log in">
         <Form
           loading={loading}
-          onSubmit={(data) => call({ url: Urls.login, method: 'POST', data })}
+          onSubmit={(data) => callLogin({ url: Urls.login, method: 'POST', data })}
           accept="Sign in"
           fields={fields}
         />

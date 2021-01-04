@@ -52,7 +52,7 @@ export default () => {
       onClick: (history) => {
         setUser(null)
         Storage.removeItem('User')
-        history.push('/login')
+        history.replace('/login')
       },
     },
   ])
@@ -62,7 +62,7 @@ export default () => {
       maintainIcons
       menu={menu}
       routes={routes}
-      config={{ title: 'Zuthaka', showUser: user!! }}
+      config={{ title: 'Zuthaka', showUser: !!user }}
       userMenu={userMenu}
       loginPath="/login"
       extraIcons={[

@@ -68,13 +68,6 @@ export default () => {
       name="Agents"
       actions={{ edit: false, delete: true }}
       onClickRow={(event, rowData) => history.push('/detail_agent', rowData)}
-      // extraActions={(rowData) => [
-      //   <Tooltip title="Interact" key="interact">
-      //     <IconButton onClick={() => history.push('/detail_agent', rowData)}>
-      //       <FaPlusCircle />
-      //     </IconButton>
-      //   </Tooltip>,
-      // ]}
     />
   )
 }

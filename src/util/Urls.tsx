@@ -13,4 +13,6 @@ export default {
   listeners_types: `${baseUrl}/listeners/types/`,
 
   agents: `${baseUrl}/agents/`,
+
+  login: `${baseUrl}/api-token-auth/`,
 }

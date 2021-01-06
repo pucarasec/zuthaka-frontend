@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import { createColumns, CrudRefProps, useWindowSize } from 'material-crud'
 import FullCrud, { WSResponse } from '../components/FullCrud'
 import Urls from '../util/Urls'
 import useAxios from '../util/useAxios'
+import ZTab from '../components/ZTab'
+import Storage from '../util/Storage'
 
 export default () => {
   useNavigatorConfig({ title: 'Agents', noPadding: false, goBack: false })
@@ -22,6 +24,10 @@ export default () => {
       url: Urls.c2_types,
     },
   })
+
+  const refTabs = useRef<HTMLButtonElement | null>(null)
+  const [lastAgents, setLastAgents] = useState(Storage.getItem('LastAgents'))
+  const selectAgent = useCallback(() => {}, [])
 
   useEffect(() => {
     setLoading(loadingListeners || loadingC2)
@@ -59,15 +65,30 @@ export default () => {
   )
 
   return (
-    <FullCrud
-      ref={(e) => (crudRef.current = e)}
-      itemName="hostname"
-      height={height - 110}
-      columns={columns}
-      url={Urls.agents}
-      name="Agents"
-      actions={{ edit: false, delete: true }}
-      onClickRow={(event, rowData) => history.push('/detail_agent', rowData)}
-    />
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <ZTab
+        ref={(e) => (refTabs.current = e)}
+        tabs={[{ label: 'Agents' }, { label: '2' }, { label: '3' }]}
+        tabsPanel={[
+          {
+            children: (
+              <FullCrud
+                ref={(e) => (crudRef.current = e)}
+                itemName="hostname"
+                height={height - 200}
+                columns={columns}
+                url={Urls.agents}
+                name="Agents"
+                actions={{ edit: false, delete: true }}
+                onClickRow={(event, rowData) => {}}
+                // onClickRow={(event, rowData) => history.push('/detail_agent', rowData)}
+              />
+            ),
+          },
+          { children: <p>2</p> },
+          { children: <p>3</p> },
+        ]}
+      />
+    </div>
   )
 }

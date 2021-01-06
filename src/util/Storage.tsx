@@ -3,6 +3,7 @@ const Keys = {
   LauncherPins: 'LauncherPins',
   ListenerPins: 'ListenerPins',
   DetachedSize: 'DetachedSize',
+  LastAgents: 'LastAgents',
 }
 
 type StorageKeys = keyof typeof Keys

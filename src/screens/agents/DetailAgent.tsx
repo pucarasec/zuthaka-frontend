@@ -18,7 +18,7 @@ import {
 } from 'react-icons/fa'
 import Storage from '../../util/Storage'
 
-interface AgentProps {
+export interface AgentProps {
   id: number
   c2: number
   listener: number
@@ -29,7 +29,7 @@ interface AgentProps {
   hostname: string
 }
 
-interface Props {
+interface Props extends AgentProps {
   detached?: boolean
 }
 
@@ -46,9 +46,7 @@ export default ({ detached }: Props) => {
   const [terminalSize, setTerminalSize] = useState<TerminalSize>('normal')
   const classes = useClasses({ height, terminalSize, detached })
 
-  const handleChange = useCallback((newValue: number) => {
-    setValue(newValue)
-  }, [])
+  const handleChange = useCallback((newValue: number) => setValue(newValue), [])
 
   useLayoutEffect(() => {
     const saveSize = () => {

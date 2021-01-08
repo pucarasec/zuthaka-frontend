@@ -4,7 +4,6 @@ import * as am4core from '@amcharts/amcharts4/core'
 import * as am4charts from '@amcharts/amcharts4/charts'
 import am4themes_animated from '@amcharts/amcharts4/themes/animated'
 import am4themes_dark from '@amcharts/amcharts4/themes/dark'
-import am4themes_spiritedaway from '@amcharts/amcharts4/themes/spiritedaway'
 import useAxios from '../util/useAxios'
 import Urls from '../util/Urls'
 import { WSResponse } from '../components/FullCrud'
@@ -53,15 +52,9 @@ export default () => {
   }, [setLoading, loadingC2, loadingC2_types, loadingListener, loadingListener_types])
 
   useLayoutEffect(() => {
-    if (color === 'dark') {
-      am4core.unuseAllThemes()
-      am4core.useTheme(am4themes_animated)
-      am4core.useTheme(am4themes_dark)
-    } else {
-      am4core.unuseAllThemes()
-      am4core.useTheme(am4themes_animated)
-      am4core.useTheme(am4themes_spiritedaway)
-    }
+    am4core.unuseAllThemes()
+    am4core.useTheme(am4themes_animated)
+    if (color === 'dark') am4core.useTheme(am4themes_dark)
 
     const container = am4core.create('chartdiv', am4core.Container)
     container.width = am4core.percent(100)

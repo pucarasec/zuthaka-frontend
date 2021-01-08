@@ -6,6 +6,8 @@ import Urls from '../util/Urls'
 import useAxios from '../util/useAxios'
 import ZTab from '../components/ZTab'
 import Storage from '../util/Storage'
+import DetailAgent from './agents/DetailAgent'
+import { AgentProps } from './agents/DetailAgent'
 
 export default () => {
   useNavigatorConfig({ title: 'Agents', noPadding: false, goBack: false })
@@ -25,9 +27,31 @@ export default () => {
     },
   })
 
-  const refTabs = useRef<HTMLButtonElement | null>(null)
-  const [lastAgents, setLastAgents] = useState(Storage.getItem('LastAgents'))
-  const selectAgent = useCallback(() => {}, [])
+  const refSelected = useRef<boolean>(false)
+  const [lastAgents, setLastAgents] = useState<AgentProps[]>([])
+  const [value, setValue] = useState(0)
+  const selectAgent = useCallback((newValue: number) => setValue(newValue), [])
+
+  const handleChange = useCallback(
+    (event, rowData: AgentProps, index) => {
+      if (lastAgents.length < 3 && !lastAgents.some(({ id }) => id === rowData.id)) {
+        setLastAgents((acc) => [...acc, rowData])
+        refSelected.current = true
+      } else {
+        const index = lastAgents.findIndex(({ id }) => id === rowData.id)
+        if (index >= 0) selectAgent(index + 1)
+      }
+      crudRef.current?.refresh()
+    },
+    [lastAgents, selectAgent],
+  )
+
+  useEffect(() => {
+    if (refSelected.current) {
+      selectAgent(lastAgents.length)
+      refSelected.current = false
+    }
+  }, [lastAgents, selectAgent])
 
   useEffect(() => {
     setLoading(loadingListeners || loadingC2)
@@ -67,8 +91,12 @@ export default () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <ZTab
-        ref={(e) => (refTabs.current = e)}
-        tabs={[{ label: 'Agents' }, { label: '2' }, { label: '3' }]}
+        value={value}
+        setValue={selectAgent}
+        tabs={[
+          { label: 'Agents' },
+          ...lastAgents.map(({ hostname }: AgentProps) => ({ label: hostname })),
+        ]}
         tabsPanel={[
           {
             children: (
@@ -80,13 +108,12 @@ export default () => {
                 url={Urls.agents}
                 name="Agents"
                 actions={{ edit: false, delete: true }}
-                onClickRow={(event, rowData) => {}}
+                onClickRow={handleChange}
                 // onClickRow={(event, rowData) => history.push('/detail_agent', rowData)}
               />
             ),
           },
-          { children: <p>2</p> },
-          { children: <p>3</p> },
+          ...lastAgents.map((item) => ({ children: <span>{item.c2}</span> })),
         ]}
       />
     </div>

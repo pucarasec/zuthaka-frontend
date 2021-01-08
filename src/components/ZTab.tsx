@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useState } from 'react'
+import React, { ReactNode } from 'react'
 import { AppBar, makeStyles, Tab, Tabs } from '@material-ui/core'
 import SwipeableViews from 'react-swipeable-views'
 import TabPanel from './TabPanel'
@@ -17,17 +17,15 @@ interface AppbarProps {
   appbarColor?: 'primary' | 'secondary' | 'inherit' | 'transparent' | 'default'
 }
 
-type ZTabProps = TabProps & AppbarProps
+type ZTabProps = TabProps & AppbarProps & { value: number; setValue: (newValue: number) => void }
 
-export default React.forwardRef<HTMLButtonElement, ZTabProps>((props, ref) => {
+export default (props: ZTabProps) => {
   const { tabs, tabsPanel, indicatorColor, textColor } = props
   const { appbarPosition, appbarColor, appbarVariant } = props
+  const { setValue, value } = props
 
-  const [value, setValue] = useState(0)
   const { height } = useWindowSize()
   const classes = useClasses({ height })
-
-  const handleChange = useCallback((newValue: number) => setValue(newValue), [])
 
   return (
     <React.Fragment>
@@ -37,26 +35,25 @@ export default React.forwardRef<HTMLButtonElement, ZTabProps>((props, ref) => {
         variant={appbarVariant || 'outlined'}
         className={classes.appbar}>
         <Tabs
-          ref={ref}
           value={value}
-          onChange={(_, newValue) => handleChange(newValue)}
+          onChange={(_, newValue) => setValue(newValue)}
           indicatorColor={indicatorColor || 'primary'}
           textColor={textColor || 'primary'}>
-          {tabs.map(({ label }) => (
-            <Tab label={label} />
+          {tabs.map(({ label }, i) => (
+            <Tab label={label} key={i} />
           ))}
         </Tabs>
       </AppBar>
-      <SwipeableViews index={value} onChangeIndex={handleChange}>
+      <SwipeableViews index={value} onChangeIndex={setValue}>
         {tabsPanel.map(({ children }, i) => (
-          <TabPanel value={value} index={i}>
+          <TabPanel value={value} index={i} key={i}>
             {children}
           </TabPanel>
         ))}
       </SwipeableViews>
     </React.Fragment>
   )
-})
+}
 
 const useClasses = makeStyles((theme) => ({
   appbar: ({ height }: any) => ({

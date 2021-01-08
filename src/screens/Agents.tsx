@@ -4,16 +4,18 @@ import { createColumns, CrudRefProps, useWindowSize } from 'material-crud'
 import FullCrud, { WSResponse } from '../components/FullCrud'
 import Urls from '../util/Urls'
 import useAxios from '../util/useAxios'
-import ZTab from '../components/ZTab'
-import Storage from '../util/Storage'
 import DetailAgent from './agents/DetailAgent'
 import { AgentProps } from './agents/DetailAgent'
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
+import { makeStyles } from '@material-ui/core'
+import 'react-tabs/style/react-tabs.css'
 
 export default () => {
   useNavigatorConfig({ title: 'Agents', noPadding: false, goBack: false })
   const crudRef = useRef<CrudRefProps | null>(null)
   const { height } = useWindowSize()
-  const { setLoading, history } = useNavigator()
+  const { setLoading } = useNavigator()
+  const classes = useClasses()
 
   const [listenersTypes, loadingListeners] = useAxios<WSResponse<any[]>>({
     onInit: {
@@ -27,7 +29,6 @@ export default () => {
     },
   })
 
-  const refSelected = useRef<boolean>(false)
   const [lastAgents, setLastAgents] = useState<AgentProps[]>([])
   const [value, setValue] = useState(0)
   const selectAgent = useCallback((newValue: number) => setValue(newValue), [])
@@ -36,22 +37,14 @@ export default () => {
     (event, rowData: AgentProps, index) => {
       if (lastAgents.length < 3 && !lastAgents.some(({ id }) => id === rowData.id)) {
         setLastAgents((acc) => [...acc, rowData])
-        refSelected.current = true
+        selectAgent(lastAgents.length + 1)
       } else {
         const index = lastAgents.findIndex(({ id }) => id === rowData.id)
         if (index >= 0) selectAgent(index + 1)
       }
-      crudRef.current?.refresh()
     },
     [lastAgents, selectAgent],
   )
-
-  useEffect(() => {
-    if (refSelected.current) {
-      selectAgent(lastAgents.length)
-      refSelected.current = false
-    }
-  }, [lastAgents, selectAgent])
 
   useEffect(() => {
     setLoading(loadingListeners || loadingC2)
@@ -89,33 +82,40 @@ export default () => {
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <ZTab
-        value={value}
-        setValue={selectAgent}
-        tabs={[
-          { label: 'Agents' },
-          ...lastAgents.map(({ hostname }: AgentProps) => ({ label: hostname })),
-        ]}
-        tabsPanel={[
-          {
-            children: (
-              <FullCrud
-                ref={(e) => (crudRef.current = e)}
-                itemName="hostname"
-                height={height - 200}
-                columns={columns}
-                url={Urls.agents}
-                name="Agents"
-                actions={{ edit: false, delete: true }}
-                onClickRow={handleChange}
-                // onClickRow={(event, rowData) => history.push('/detail_agent', rowData)}
-              />
-            ),
-          },
-          ...lastAgents.map((item) => ({ children: <span>{item.c2}</span> })),
-        ]}
-      />
+    <div className={classes.root}>
+      <Tabs selectedIndex={value} onSelect={selectAgent}>
+        <TabList>
+          <Tab>Agents</Tab>
+          {lastAgents.map(({ hostname, id }: AgentProps) => (
+            <Tab key={id}>{hostname}</Tab>
+          ))}
+        </TabList>
+        <TabPanel>
+          <FullCrud
+            ref={(e) => (crudRef.current = e)}
+            itemName="hostname"
+            height={height - 200}
+            columns={columns}
+            url={Urls.agents}
+            name="Agents"
+            actions={{ edit: false, delete: true }}
+            onClickRow={handleChange}
+          />
+        </TabPanel>
+        {lastAgents.map((item: AgentProps) => (
+          <TabPanel key={item.id}>
+            <DetailAgent {...item} />
+          </TabPanel>
+        ))}
+      </Tabs>
     </div>
   )
 }
+
+const useClasses = makeStyles((theme) => ({
+  root: {
+    padding: theme.spacing(2),
+    marginLeft: 60,
+    marginRight: 60,
+  },
+}))

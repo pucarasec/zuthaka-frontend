@@ -29,19 +29,19 @@ export interface AgentProps {
   hostname: string
 }
 
-interface Props extends AgentProps {
+interface Props extends Partial<AgentProps> {
   detached?: boolean
 }
 
 type TerminalSize = 'minimizezd' | 'normal' | 'maximized'
 
-export default ({ detached }: Props) => {
+export default ({ detached, hostname }: Props) => {
   useNavigatorConfig(
     detached ? { onlyContent: true } : { title: 'Agents', noPadding: true, goBack: true },
   )
   const { height } = useWindowSize()
   const [value, setValue] = useState(0)
-  const { state } = useLocation<AgentProps>()
+  // const { state } = useLocation<AgentProps>()
 
   const [terminalSize, setTerminalSize] = useState<TerminalSize>('normal')
   const classes = useClasses({ height, terminalSize, detached })
@@ -66,7 +66,10 @@ export default ({ detached }: Props) => {
             <Tabs
               className={classes.tabbar}
               value={value}
-              onChange={(_, newValue) => handleChange(newValue)}
+              onChange={(e, newValue) => {
+                e.stopPropagation()
+                handleChange(newValue)
+              }}
               indicatorColor="primary"
               textColor="primary">
               <Tab label="Manage" />
@@ -114,7 +117,7 @@ export default ({ detached }: Props) => {
           startState="maximised"
           allowTabs={false}
           hideTopBar
-          msg={state?.hostname}
+          msg={hostname}
         />
         <div className={classes.terminalBtns}>
           <IconButton
@@ -151,7 +154,7 @@ const useClasses = makeStyles((theme) => ({
     flex: 1,
   },
   root: ({ height, detached }: any) => ({
-    height: height - (detached ? 0 : 64),
+    height: height - (detached ? 0 : 140),
     display: 'flex',
     flexDirection: 'column',
   }),

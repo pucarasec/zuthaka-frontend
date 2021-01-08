@@ -4,11 +4,10 @@ import { createColumns, CrudRefProps, useWindowSize } from 'material-crud'
 import FullCrud, { WSResponse } from '../components/FullCrud'
 import Urls from '../util/Urls'
 import useAxios from '../util/useAxios'
-import DetailAgent from './agents/DetailAgent'
-import { AgentProps } from './agents/DetailAgent'
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
 import { makeStyles } from '@material-ui/core'
 import 'react-tabs/style/react-tabs.css'
+import DetailWrapper, { DetailWrapperProps } from '../components/DetailWrapper'
 
 export default () => {
   useNavigatorConfig({ title: 'Agents', noPadding: false, goBack: false })
@@ -29,12 +28,12 @@ export default () => {
     },
   })
 
-  const [lastAgents, setLastAgents] = useState<AgentProps[]>([])
+  const [lastAgents, setLastAgents] = useState<DetailWrapperProps[]>([])
   const [value, setValue] = useState(0)
   const selectAgent = useCallback((newValue: number) => setValue(newValue), [])
 
   const handleChange = useCallback(
-    (event, rowData: AgentProps, index) => {
+    (event, rowData: DetailWrapperProps, index) => {
       if (lastAgents.length < 3 && !lastAgents.some(({ id }) => id === rowData.id)) {
         setLastAgents((acc) => [...acc, rowData])
         selectAgent(lastAgents.length + 1)
@@ -86,7 +85,7 @@ export default () => {
       <Tabs selectedIndex={value} onSelect={selectAgent}>
         <TabList>
           <Tab>Agents</Tab>
-          {lastAgents.map(({ hostname, id }: AgentProps) => (
+          {lastAgents.map(({ hostname, id }: DetailWrapperProps) => (
             <Tab key={id}>{hostname}</Tab>
           ))}
         </TabList>
@@ -102,9 +101,9 @@ export default () => {
             onClickRow={handleChange}
           />
         </TabPanel>
-        {lastAgents.map((item: AgentProps) => (
+        {lastAgents.map((item: DetailWrapperProps) => (
           <TabPanel key={item.id}>
-            <DetailAgent {...item} />
+            <DetailWrapper {...item} />
           </TabPanel>
         ))}
       </Tabs>

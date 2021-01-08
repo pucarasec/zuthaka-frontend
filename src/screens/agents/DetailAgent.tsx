@@ -3,45 +3,22 @@ import { useNavigatorConfig } from 'material-navigator'
 import React, { useCallback, useLayoutEffect, useState } from 'react'
 import SwipeableViews from 'react-swipeable-views'
 import TabPanel from '../../components/TabPanel'
-import Terminal from 'terminal-in-react'
 import { useWindowSize } from 'material-crud'
 import Manage from './Manage'
 import FileManager from './FileManager'
 import ProcessManager from './ProcessManager'
 import PostExploitation from './PostExploitation'
-import { useLocation } from 'react-router-dom'
-import {
-  FaExternalLinkAlt,
-  FaWindowMinimize,
-  FaWindowMaximize,
-  FaWindowRestore,
-} from 'react-icons/fa'
+import { FaExternalLinkAlt } from 'react-icons/fa'
 import Storage from '../../util/Storage'
+import ZTerminal, { TerminalSize } from '../../components/ZTerminal'
+import { DetailWrapperProps } from '../../components/DetailWrapper'
 
-export interface AgentProps {
-  id: number
-  c2: number
-  listener: number
-  creation_date: Date
-  first_conection: Date
-  last_conection: Date
-  username: string
-  hostname: string
-}
-
-interface Props extends Partial<AgentProps> {
-  detached?: boolean
-}
-
-type TerminalSize = 'minimizezd' | 'normal' | 'maximized'
-
-export default ({ detached, hostname }: Props) => {
+export default ({ detached, ...agent }: DetailWrapperProps) => {
   useNavigatorConfig(
     detached ? { onlyContent: true } : { title: 'Agents', noPadding: true, goBack: true },
   )
   const { height } = useWindowSize()
   const [value, setValue] = useState(0)
-  // const { state } = useLocation<AgentProps>()
 
   const [terminalSize, setTerminalSize] = useState<TerminalSize>('normal')
   const classes = useClasses({ height, terminalSize, detached })
@@ -107,39 +84,11 @@ export default ({ detached, hostname }: Props) => {
           </SwipeableViews>
         </React.Fragment>
       )}
-      <div className={classes.terminal}>
-        <Terminal
-          style={{ fontWeight: 'bold', fontSize: '1em' }}
-          color="white"
-          prompt="white"
-          backgroundColor="black"
-          barColor="black"
-          startState="maximised"
-          allowTabs={false}
-          hideTopBar
-          msg={hostname}
-        />
-        <div className={classes.terminalBtns}>
-          <IconButton
-            disabled={terminalSize === 'minimizezd'}
-            size="small"
-            onClick={() => setTerminalSize('minimizezd')}>
-            <FaWindowMinimize />
-          </IconButton>
-          <IconButton
-            disabled={terminalSize === 'normal'}
-            size="small"
-            onClick={() => setTerminalSize('normal')}>
-            <FaWindowRestore />
-          </IconButton>
-          <IconButton
-            disabled={terminalSize === 'maximized'}
-            size="small"
-            onClick={() => setTerminalSize('maximized')}>
-            <FaWindowMaximize />
-          </IconButton>
-        </div>
-      </div>
+      <ZTerminal
+        terminalSize={terminalSize}
+        onTerminalResize={(newSize) => setTerminalSize(newSize)}
+        {...agent}
+      />
     </div>
   )
 }
@@ -161,21 +110,5 @@ const useClasses = makeStyles((theme) => ({
   tabs: {
     padding: theme.spacing(2),
     flex: 1,
-  },
-  terminal: ({ terminalSize }: any) => ({
-    transition: theme.transitions.create('height', {
-      duration: theme.transitions.duration.standard,
-      easing: theme.transitions.easing.sharp,
-    }),
-    height: terminalSize === 'normal' ? 175 : terminalSize === 'maximized' ? '100%' : 24,
-    position: 'relative',
-  }),
-  terminalBtns: {
-    backgroundColor: 'white',
-    paddingRight: theme.spacing(1),
-    paddingLeft: theme.spacing(1),
-    position: 'absolute',
-    top: 0,
-    right: 0,
   },
 }))

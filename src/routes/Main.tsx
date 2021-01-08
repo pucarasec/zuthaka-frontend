@@ -17,11 +17,9 @@ import {
 } from 'react-icons/fa'
 import { useColorTheme } from '../util/Theme'
 import Agents from '../screens/Agents'
-import DetailAgent from '../screens/agents/DetailAgent'
-import { SocketProvider } from '../util/SocketContext'
-import Urls from '../util/Urls'
 import { useUser } from 'material-crud'
 import Login from '../screens/Login'
+import DetailWrapper from '../components/DetailWrapper'
 
 export default () => {
   const { setColor, color } = useColorTheme()
@@ -34,8 +32,8 @@ export default () => {
     { route: '/listener', component: <Listener />, hidden: !user },
     { route: '/launcher', component: <Launcher />, hidden: !user },
     { route: '/agents', component: <Agents />, hidden: !user },
-    // { route: '/detail_agent', component: <DetailAgent detached={false} />, hidden: !user },
-    { route: '/detached_agent', component: <DetailAgent detached />, hidden: !user },
+    { route: '/detail_agent', component: <DetailWrapper detached={false} />, hidden: !user },
+    { route: '/detached_agent', component: <DetailWrapper detached />, hidden: !user },
   ])
 
   const menu = createMenu([
@@ -60,7 +58,6 @@ export default () => {
   ])
 
   return (
-    // <SocketProvider url={Urls.socket}>
     <Navigator
       maintainIcons
       menu={menu}
@@ -78,6 +75,5 @@ export default () => {
         },
       ]}
     />
-    // </SocketProvider>
   )
 }

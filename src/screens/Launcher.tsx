@@ -8,7 +8,7 @@ import {
   callWs,
 } from 'material-crud'
 import Urls from '../util/Urls'
-import { Tooltip, IconButton } from '@material-ui/core'
+import { Tooltip, IconButton, Typography } from '@material-ui/core'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
@@ -141,11 +141,18 @@ export default () => {
         types?.results
           .reduce((final, { id, options }): FieldProps[] => {
             const item = options.map(
-              ({ type, name, description, required }: any): FieldProps => ({
+              ({ type, name, description, required, example }: any): FieldProps => ({
                 id: `${id}-${name}`,
                 type: renderType(type),
                 title: name,
-                help: description || '',
+                help: description ? (
+                  <React.Fragment>
+                    <Typography color="inherit">{description}</Typography>
+                    {example && <em>Example: {example}</em>}
+                  </React.Fragment>
+                ) : (
+                  ''
+                ),
                 depends: (props) => id === props.launcher_type,
                 validate:
                   required.toLowerCase() === 'true'

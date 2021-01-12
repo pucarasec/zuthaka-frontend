@@ -1,9 +1,18 @@
-import React, { createContext, memo, ReactNode, useContext, useEffect, useMemo } from 'react'
-import { io, ManagerOptions, Socket, SocketOptions } from 'socket.io-client'
+import React, {
+  createContext,
+  memo,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react'
+import { useUser } from 'material-crud'
 import Urls from './Urls'
 
 interface ContextProps {
-  socket: Socket | null
+  socket: WebSocket | null
+  refresh?: () => void
 }
 
 const initialContext: ContextProps = {
@@ -15,20 +24,49 @@ const SocketContext = createContext<ContextProps>(initialContext)
 interface ProviderProps {
   children: ReactNode
   id: number
-  options?: Partial<ManagerOptions & SocketOptions>
 }
 
-export const SocketProvider = memo(({ children, id, options }: ProviderProps) => {
-  const socket = useMemo(
-    () =>
-      io('ws://192.168.102.50:8000', { path: '/agents/1/interact/', transports: ['websocket'] }),
-    [],
-  )
+export const SocketProvider = memo(({ children, id }: ProviderProps) => {
+  const { user } = useUser()
+  const [attemps, setAttemps] = useState(0)
 
-  return <SocketContext.Provider value={{ socket }}>{children}</SocketContext.Provider>
+  const refresh = useCallback(() => setAttemps((acc) => acc + 1), [])
+
+  const socket = useMemo(() => {
+    console.log(attemps)
+    const socket = new WebSocket(
+      `${Urls.baseSocket}/agents/${id}/interact/?access_token=${user.token}`,
+    )
+
+    return socket
+  }, [user.token, id, attemps])
+
+  return <SocketContext.Provider value={{ socket, refresh }}>{children}</SocketContext.Provider>
 })
 
+type OnMessageProps = (e: MessageEvent) => void
+type OnErrorProps = (e: CloseEvent) => void
+
 export const useSocket = () => {
-  const { socket } = useContext(SocketContext)
-  return socket
+  const { socket, refresh } = useContext(SocketContext)
+  const callSend = useCallback((data: object) => socket?.send(JSON.stringify(data)), [socket])
+  const callOnMessage = useCallback(
+    (e: OnMessageProps) => {
+      if (socket) socket.onmessage = (ev) => e(ev)
+    },
+    [socket],
+  )
+  const callOnError = useCallback(
+    (e: OnErrorProps) => {
+      if (socket) {
+        socket.onclose = (ev) => {
+          e(ev)
+          if (refresh) refresh()
+        }
+      }
+    },
+    [socket, refresh],
+  )
+
+  return { send: callSend, onMessage: callOnMessage, onError: callOnError }
 }

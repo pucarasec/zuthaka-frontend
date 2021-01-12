@@ -19,8 +19,8 @@ export interface DetailWrapperProps extends Partial<AgentProps> {
 
 export default ({ detached, ...agent }: DetailWrapperProps) => {
   return (
-    // <SocketProvider id={id}>
-    <DetailAgent detached={detached} {...agent} />
-    // </SocketProvider>
+    <SocketProvider id={agent.id!!}>
+      <DetailAgent detached={detached} {...agent} />
+    </SocketProvider>
   )
 }

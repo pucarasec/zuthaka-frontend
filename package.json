@@ -20,7 +20,7 @@
 		"chonky": "^2.0.5",
 		"chonky-icon-fontawesome": "^2.0.5",
 		"formik": "^2.1.5",
-		"material-crud": "0.6.9939",
+		"material-crud": "0.6.9940",
 		"material-navigator": "0.1.321",
 		"moment": "^2.29.1",
 		"notistack": "^1.0.0",
@@ -38,7 +38,6 @@
 		"react-scripts": "3.4.3",
 		"react-swipeable-views": "^0.13.9",
 		"react-tabs": "^3.1.2",
-		"socket.io-client": "^3.0.4",
 		"terminal-in-react": "^4.3.1",
 		"typescript": "^3.9.7",
 		"yup": "^0.29.3"

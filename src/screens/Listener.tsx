@@ -157,7 +157,7 @@ export default () => {
           placeholder: 'Select one type',
           validate: Yup.number().required('Required'),
           onSelect: (val) => setTypeSelected(val as string),
-          // readonly: 'edit',
+          readonly: 'edit',
         },
         {
           id: 'c2_id',

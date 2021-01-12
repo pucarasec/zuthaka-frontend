@@ -38,7 +38,6 @@
 		"react-scripts": "3.4.3",
 		"react-swipeable-views": "^0.13.9",
 		"react-tabs": "^3.1.2",
-		"socket.io-client": "^3.0.4",
 		"terminal-in-react": "^4.3.1",
 		"typescript": "^3.9.7",
 		"yup": "^0.29.3"

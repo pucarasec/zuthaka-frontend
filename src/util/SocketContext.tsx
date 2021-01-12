@@ -35,7 +35,7 @@ export const SocketProvider = memo(({ children, id }: ProviderProps) => {
   const socket = useMemo(() => {
     console.log(attemps)
     const socket = new WebSocket(
-      `ws://192.168.102.50:8000/agents/${id}/interact/?access_token=${user.token}`,
+      `${Urls.baseSocket}/agents/${id}/interact/?access_token=${user.token}`,
     )
 
     return socket

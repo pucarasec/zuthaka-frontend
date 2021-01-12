@@ -13,10 +13,6 @@ interface Props extends DetailWrapperProps {
   onTerminalResize: (newSize: TerminalSize) => void
 }
 
-const createTask = () => {
-  return '00asda-a511asd5-asda'
-}
-
 export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
   const { send, onMessage, onError } = useSocket()
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as Yup from 'yup'
 import { createColumns, createFields, CrudRefProps, FormTypes, TableTypes } from 'material-crud'
-import { IconButton, Tooltip } from '@material-ui/core'
+import { IconButton, Tooltip, Typography } from '@material-ui/core'
 import Urls from '../util/Urls'
 import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
@@ -157,7 +157,7 @@ export default () => {
           placeholder: 'Select one type',
           validate: Yup.number().required('Required'),
           onSelect: (val) => setTypeSelected(val as string),
-          readonly: 'edit',
+          // readonly: 'edit',
         },
         {
           id: 'c2_id',
@@ -173,11 +173,18 @@ export default () => {
         listenerTypes?.results
           .reduce((final, { id, options }): FieldProps[] => {
             const item = options.map(
-              ({ type, name, description, required }: any): FieldProps => ({
+              ({ type, name, description, required, example }: any): FieldProps => ({
                 id: `${id}-${name}`,
                 type: renderType(type),
                 title: name,
-                help: description || '',
+                help: description ? (
+                  <React.Fragment>
+                    <Typography color="inherit">{description}</Typography>
+                    {example && <em>Example: {example}</em>}
+                  </React.Fragment>
+                ) : (
+                  ''
+                ),
                 depends: (props) => id === props.listener_type,
                 validate:
                   required.toLowerCase() === 'true'

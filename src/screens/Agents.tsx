@@ -40,6 +40,13 @@ export default () => {
       } else {
         const index = lastAgents.findIndex(({ id }) => id === rowData.id)
         if (index >= 0) selectAgent(index + 1)
+        else {
+          setLastAgents((acc) => {
+            acc.shift()
+            return [...acc, rowData]
+          })
+          selectAgent(lastAgents.length + 1)
+        }
       }
     },
     [lastAgents, selectAgent],

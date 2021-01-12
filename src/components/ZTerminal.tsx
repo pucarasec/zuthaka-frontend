@@ -1,9 +1,7 @@
 import { IconButton, makeStyles } from '@material-ui/core'
 import { useNavigator } from 'material-navigator'
-import React, { useRef } from 'react'
+import React from 'react'
 import { FaWindowMinimize, FaWindowRestore, FaWindowMaximize } from 'react-icons/fa'
-import { useLocation } from 'react-router-dom'
-import { io } from 'socket.io-client'
 import Terminal from 'terminal-in-react'
 import { useSocket } from '../util/SocketContext'
 import { DetailWrapperProps } from './DetailWrapper'
@@ -19,15 +17,8 @@ const createTask = () => {
   return '00asda-a511asd5-asda'
 }
 
-const socket = io('http://192.168.102.50:8000/', {
-  path: '/agents/1/interact/',
-  transports: ['websocket'],
-  reconnection: false,
-})
-console.log(socket.connected)
-
 export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
-  //   const socket = useSocket()
+  const { send, onMessage, onError } = useSocket()
 
   const { setLoading } = useNavigator()
   const classes = useClasses({ terminalSize })
@@ -46,26 +37,21 @@ export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
         msg={hostname}
         commandPassThrough={(cmd, print: (message: string) => void) => {
           const [command] = cmd
-          //   socketRef.current.send(command)
-          //   socketRef.current.on(command, (data: any) => {
-          // console.log(data)
-          //   })
-          console.log(socket.connected)
-          socket.send(JSON.stringify({ type: 'create.task' }))
-          socket.onAny((data) => console.log(data))
-          //   socket.send('{"type":"create.task"}')
-          //   socket.on(, (data: any) => {
-          //     console.log(data)
-          //   })
-          setLoading(true)
-          setTimeout(() => {
-            print('No anda')
+          onMessage((e) => {
+            const { type, reference, content } = JSON.parse(e.data || '{}')
+            if (type === 'task.created') {
+              send({ type: 'shell.execute', command, reference })
+            } else if (content) {
+              setLoading(false)
+              print(content)
+            }
+          })
+          onError((e) => {
             setLoading(false)
-          }, 1500)
-          //   socketRef.current.send(command)
-          //   socketRef.current.on(command, (data: any) => {
-          //     console.log(data)
-          //   })
+            print('Command not found')
+          })
+          setLoading(true)
+          send({ type: 'create.task' })
         }}
       />
       <div className={classes.terminalBtns}>

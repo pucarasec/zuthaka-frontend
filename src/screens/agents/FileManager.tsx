@@ -1,18 +1,14 @@
-import React, { memo, useCallback, useEffect, useRef } from 'react'
+import React, { memo, useCallback, useRef } from 'react'
 import { ChonkyActions, FileActionData, FullFileBrowser } from 'chonky'
-import {
-  Card,
-  CardActions,
-  CircularProgress,
-  IconButton,
-  makeStyles,
-  Paper,
-  Typography,
-} from '@material-ui/core'
-import { useSnackbar } from 'notistack'
+import { Card, CardActions, CircularProgress, makeStyles, Typography } from '@material-ui/core'
+import { SnackbarKey, useSnackbar } from 'notistack'
+import './chonky.css'
 
 export default memo(() => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
+  const classes = useClasses()
+
+  const snacksRef = useRef<SnackbarKey[]>([])
   const uploadFileRef = useRef<HTMLInputElement | null>(null)
   const files = [
     { id: 'lht', name: 'Projects', isDir: true },
@@ -24,6 +20,32 @@ export default memo(() => {
   ]
 
   const folderChain = [{ id: 'home', name: '/home', isDir: true }]
+
+  const showNotification = useCallback(
+    (message: string) => {
+      const snack = enqueueSnackbar(message, {
+        persist: true,
+        content: (key, message) => {
+          return (
+            <Card key={key} className={classes.card}>
+              <CardActions classes={{ root: classes.actionRoot }}>
+                <Typography variant="subtitle2" className={classes.typography}>
+                  {message}
+                </Typography>
+                <CircularProgress className={classes.loading} />
+              </CardActions>
+            </Card>
+          )
+        },
+      })
+      snacksRef.current.push(snack)
+
+      setTimeout(() => {
+        closeSnackbar(snacksRef.current.find((e) => e === snack))
+      }, 5000)
+    },
+    [classes, closeSnackbar, enqueueSnackbar],
+  )
 
   const handleActions = useCallback((action: FileActionData<any>) => {
     const { id } = action
@@ -41,10 +63,8 @@ export default memo(() => {
     }
   }, [])
 
-  const classes = useClasses()
-
   return (
-    <div>
+    <div onContextMenu={() => false}>
       <FullFileBrowser
         files={files}
         folderChain={folderChain}
@@ -60,25 +80,7 @@ export default memo(() => {
           const { files } = e.target
           if (files) {
             for (const file of files) {
-              const snack = enqueueSnackbar(`Uploading file ${file.name}`, {
-                persist: true,
-                content: (key, message) => {
-                  return (
-                    <Card key={key} className={classes.card}>
-                      <CardActions classes={{ root: classes.actionRoot }}>
-                        <Typography variant="subtitle2" className={classes.typography}>
-                          {message}
-                        </Typography>
-                        <CircularProgress className={classes.loading} />
-                      </CardActions>
-                    </Card>
-                  )
-                },
-              })
-
-              setTimeout(() => {
-                closeSnackbar(snack)
-              }, 5000)
+              showNotification(`Uploading file ${file.name}`)
             }
           }
         }}

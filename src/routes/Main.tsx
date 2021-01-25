@@ -13,6 +13,7 @@ import {
   FaSun,
   FaThLarge,
   FaTools,
+  FaUserLock,
   FaUserSecret,
 } from 'react-icons/fa'
 import { useColorTheme } from '../util/Theme'
@@ -20,6 +21,7 @@ import Agents from '../screens/Agents'
 import { useUser } from 'material-crud'
 import Login from '../screens/Login'
 import DetailWrapper from '../components/DetailWrapper'
+import ChangePassword from '../screens/ChangePassword'
 
 export default () => {
   const { setColor, color } = useColorTheme()
@@ -34,6 +36,7 @@ export default () => {
     { route: '/agents', component: <Agents />, hidden: !user },
     { route: '/detail_agent', component: <DetailWrapper detached={false} />, hidden: !user },
     { route: '/detached_agent', component: <DetailWrapper detached />, hidden: !user },
+    { route: '/changePass', component: <ChangePassword />, hidden: !user },
   ])
 
   const menu = createMenu([
@@ -45,6 +48,15 @@ export default () => {
   ])
 
   const userMenu = createUserMenu([
+    {
+      id: 'changePass',
+      title: 'Change password',
+      icon: <FaUserLock />,
+      onClick: (history) => {
+        history.replace('/changePass')
+      },
+    },
+    {},
     {
       id: 'logout',
       title: 'Sign out',

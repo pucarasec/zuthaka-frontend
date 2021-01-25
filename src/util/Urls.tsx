@@ -18,4 +18,5 @@ export default {
   agents_download: (id: string | number) => `${baseUrl}/agents/${id}/download/`,
 
   login: `${baseUrl}/api-token-auth/`,
+  changePassword: `${baseUrl}/change_password/`,
 }

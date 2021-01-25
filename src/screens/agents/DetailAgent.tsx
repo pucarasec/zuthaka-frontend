@@ -68,7 +68,11 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
               </IconButton>
             )}
           </AppBar>
-          <SwipeableViews className={classes.tabs} index={value} onChangeIndex={handleChange}>
+          <SwipeableViews
+            containerStyle={{ height: '100%' }}
+            className={classes.tabs}
+            index={value}
+            onChangeIndex={handleChange}>
             <TabPanel value={value} index={0}>
               <Manage />
             </TabPanel>

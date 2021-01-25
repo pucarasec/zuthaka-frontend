@@ -16,8 +16,10 @@ export default memo(() => {
   const { headers } = useUser()
 
   const snacksRef = useRef<SnackbarKey[]>([])
+  const listRef = useRef(false)
   const uploadFileRef = useRef<HTMLInputElement | null>(null)
-  const downloadRef = useRef<string>('')
+  const fileRef = useRef<string | null>(null)
+  const downloadRef = useRef('')
 
   const [files, setFiles] = useState<any[]>([null])
   const folderChain = [
@@ -69,46 +71,63 @@ export default memo(() => {
               })
               break
             case 'upload':
-              // send({ type: 'file_manager.upload', target_directory: '/home/dev2/', reference })
-              console.log('subir archivo')
+              const formData = new FormData()
+              formData.append('file', data)
+              formData.append('task-reference', reference)
+              const { response } = await callWs<{ transition_file: string }>({
+                method: 'POST',
+                url: Urls.agents_upload(id),
+                headers: { ...headers, 'content-type': 'multipart/form-data' },
+                data: formData,
+              })
+              if (response) {
+                fileRef.current = response?.transition_file
+                send({ type: 'file_manager.upload', target_directory: '/home/dev2/', reference })
+              }
+              break
+            default:
               break
           }
         } else if (content) {
           setLoading(false)
           if (content.error) {
             showNotification(content.error)
-            return
-          }
-          switch (type) {
-            case 'file_manager.list_directory.result':
-              const { files, directories } = content
-              setFiles([
-                ...files.map(({ name }: any) => ({ id: name, name })),
-                ...directories.map(({ name }: any) => ({ id: name, name, isDir: true })),
-              ])
-              break
-            case 'file_manager.download.result':
-              setLoading(true)
-              const { response } = await callWs<Blob>({
-                url: `${Urls.agents_download(id)}`,
-                responseType: 'blob',
-                params: { 'task-reference': reference },
-                headers,
-              })
-              if (response) {
-                const url = window.URL.createObjectURL(new Blob([response]))
-                const link = document.createElement('a')
-                link.href = url
-                link.setAttribute('download', downloadRef.current)
-                document.body.appendChild(link)
-                link.click()
-                link.remove()
-              }
-              setLoading(false)
-              break
-            case 'file_manager.upload.result':
-              showNotification(content)
-              break
+          } else {
+            switch (type) {
+              case 'file_manager.list_directory.result':
+                const { files, directories } = content
+                setFiles([
+                  ...files.map(({ name }: any) => ({ id: name, name })),
+                  ...directories.map(({ name }: any) => ({ id: name, name, isDir: true })),
+                ])
+                break
+              case 'file_manager.download.result':
+                setLoading(true)
+                const { response } = await callWs<Blob>({
+                  url: Urls.agents_download(id),
+                  responseType: 'blob',
+                  params: { 'task-reference': reference },
+                  headers,
+                })
+                if (response) {
+                  const url = window.URL.createObjectURL(new Blob([response]))
+                  const link = document.createElement('a')
+                  link.href = url
+                  link.setAttribute('download', downloadRef.current)
+                  document.body.appendChild(link)
+                  link.click()
+                  link.remove()
+                }
+                setLoading(false)
+                break
+              case 'file_manager.upload.result':
+                showNotification(content)
+                const newFile = fileRef.current?.replace('/', '')
+                setFiles((acc) => [...acc, { id: newFile, name: newFile }])
+                break
+              default:
+                break
+            }
           }
         }
       })
@@ -130,10 +149,8 @@ export default memo(() => {
           break
         case ChonkyActions.UploadFiles.id:
           uploadFileRef.current?.click()
-          console.log(action)
           break
         default:
-          console.log(id, ChonkyActions.UploadFiles.id)
           break
       }
     },
@@ -141,11 +158,26 @@ export default memo(() => {
   )
 
   useEffect(() => {
-    handleSocket('list')
+    const parent = document.getElementById('divContainer')?.parentElement
+    if (parent) {
+      parent.style.height = '100%'
+      parent.addEventListener('contextmenu', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        return false
+      })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!listRef.current) {
+      handleSocket('list')
+      listRef.current = true
+    }
   }, [handleSocket])
 
   return (
-    <div onContextMenu={() => false}>
+    <div id="divContainer" style={{ height: '100%' }}>
       <FullFileBrowser
         files={files}
         folderChain={folderChain}
@@ -161,7 +193,7 @@ export default memo(() => {
           const { files } = e.target
           if (files) {
             for (const file of files) {
-              showNotification(`Uploading file ${file.name}`)
+              handleSocket('upload', file)
             }
           }
         }}

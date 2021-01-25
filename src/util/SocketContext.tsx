@@ -13,10 +13,12 @@ import Urls from './Urls'
 interface ContextProps {
   socket: WebSocket | null
   refresh?: () => void
+  id: number
 }
 
 const initialContext: ContextProps = {
   socket: null,
+  id: -1,
 }
 
 const SocketContext = createContext<ContextProps>(initialContext)
@@ -41,14 +43,14 @@ export const SocketProvider = memo(({ children, id }: ProviderProps) => {
     return socket
   }, [user.token, id, attemps])
 
-  return <SocketContext.Provider value={{ socket, refresh }}>{children}</SocketContext.Provider>
+  return <SocketContext.Provider value={{ socket, refresh, id }}>{children}</SocketContext.Provider>
 })
 
 type OnMessageProps = (e: MessageEvent) => void
 type OnErrorProps = (e: CloseEvent) => void
 
 export const useSocket = () => {
-  const { socket, refresh } = useContext(SocketContext)
+  const { socket, refresh, id } = useContext(SocketContext)
   const callSend = useCallback((data: object) => socket?.send(JSON.stringify(data)), [socket])
   const callOnMessage = useCallback(
     (e: OnMessageProps) => {
@@ -68,5 +70,5 @@ export const useSocket = () => {
     [socket, refresh],
   )
 
-  return { send: callSend, onMessage: callOnMessage, onError: callOnError }
+  return { send: callSend, onMessage: callOnMessage, onError: callOnError, id }
 }

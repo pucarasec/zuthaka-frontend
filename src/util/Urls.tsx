@@ -14,6 +14,9 @@ export default {
   listeners_types: `${baseUrl}/listeners/types/`,
 
   agents: `${baseUrl}/agents/`,
+  agents_upload: (id: string | number) => `${baseUrl}/agents/${id}/upload/`,
+  agents_download: (id: string | number) => `${baseUrl}/agents/${id}/download/`,
 
   login: `${baseUrl}/api-token-auth/`,
+  changePassword: `${baseUrl}/change_password/`,
 }

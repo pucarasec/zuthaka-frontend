@@ -37,7 +37,10 @@ export default () => {
 
   return (
     <div style={{ width: '80%', margin: 'auto' }}>
-      <CenteredCard loading={loading} title="Log in">
+      <CenteredCard
+        loading={loading}
+        title="Welcome to Zuthaka!"
+        subtitle="Please authenticate to continue">
         <Form
           loading={loading}
           onSubmit={(data) => callLogin({ url: Urls.login, method: 'POST', data })}

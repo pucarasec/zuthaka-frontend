@@ -1,23 +1,24 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { ChonkyActions, FileActionData, FullFileBrowser } from 'chonky'
+import { ChonkyActions, FullFileBrowser } from 'chonky'
 import { Card, CardActions, CircularProgress, makeStyles, Typography } from '@material-ui/core'
 import { SnackbarKey, useSnackbar } from 'notistack'
 import './chonky.css'
 import { useSocket } from '../../util/SocketContext'
-import { useNavigator } from 'material-navigator'
 import { callWs, useUser } from 'material-crud'
 import Urls from '../../util/Urls'
+import { useDropzone } from 'react-dropzone'
+import { useColorTheme } from '../../util/Theme'
 
 export default memo(() => {
+  const { isDarkTheme } = useColorTheme()
+  const classes = useClasses({ isDarkTheme })
   const { enqueueSnackbar, closeSnackbar } = useSnackbar()
-  const classes = useClasses()
-  const { setLoading } = useNavigator()
   const { send, onError, onMessage, id } = useSocket()
   const { headers } = useUser()
 
   const snacksRef = useRef<SnackbarKey[]>([])
   const listRef = useRef(false)
-  const uploadFileRef = useRef<HTMLInputElement | null>(null)
+  // const uploadFileRef = useRef<HTMLInputElement | null>(null)
   const fileRef = useRef<string | null>(null)
   const downloadRef = useRef('')
 
@@ -89,7 +90,6 @@ export default memo(() => {
               break
           }
         } else if (content) {
-          setLoading(false)
           if (content.error) {
             showNotification(content.error)
           } else {
@@ -102,7 +102,6 @@ export default memo(() => {
                 ])
                 break
               case 'file_manager.download.result':
-                setLoading(true)
                 const { response } = await callWs<Blob>({
                   url: Urls.agents_download(id),
                   responseType: 'blob',
@@ -118,7 +117,6 @@ export default memo(() => {
                   link.click()
                   link.remove()
                 }
-                setLoading(false)
                 break
               case 'file_manager.upload.result':
                 showNotification(content)
@@ -132,30 +130,25 @@ export default memo(() => {
         }
       })
       onError((e) => {
-        setLoading(false)
         showNotification('Error ocurred')
       })
       send({ type: 'create.task' })
     },
-    [onMessage, onError, showNotification, send, setLoading, id, headers],
+    [onMessage, onError, showNotification, send, id, headers],
   )
 
-  const handleActions = useCallback(
-    (action: FileActionData<any>) => {
-      const { id } = action
-      switch (id) {
-        case ChonkyActions.DownloadFiles.id:
-          handleSocket('download', action.state.selectedFilesForAction)
-          break
-        case ChonkyActions.UploadFiles.id:
-          uploadFileRef.current?.click()
-          break
-        default:
-          break
+  const { getRootProps, getInputProps } = useDropzone({
+    maxFiles: 3,
+    noDragEventsBubbling: true,
+    noKeyboard: true,
+    onDrop: (files) => {
+      if (files) {
+        for (const file of files) {
+          handleSocket('upload', file)
+        }
       }
     },
-    [handleSocket],
-  )
+  })
 
   useEffect(() => {
     const parent = document.getElementById('divContainer')?.parentElement
@@ -178,35 +171,27 @@ export default memo(() => {
 
   return (
     <div id="divContainer" style={{ height: '100%' }}>
+      <div {...getRootProps({ className: classes.dropzone })}>
+        <input {...getInputProps({ multiple: true, type: 'file' })} />
+        <p>To upload drag and drop some files here, or click to select files. Max 3 files.</p>
+      </div>
       <FullFileBrowser
         files={files}
         folderChain={folderChain}
-        fileActions={[ChonkyActions.DownloadFiles, ChonkyActions.UploadFiles]}
-        onFileAction={handleActions}
-      />
-      <input
-        multiple
-        max={3}
-        type="file"
-        ref={(e) => (uploadFileRef.current = e)}
-        onChange={(e) => {
-          const { files } = e.target
-          if (files) {
-            for (const file of files) {
-              handleSocket('upload', file)
-            }
+        fileActions={[ChonkyActions.DownloadFiles]}
+        onFileAction={(action) => {
+          if (action.id === ChonkyActions.DownloadFiles.id) {
+            handleSocket('download', action.state.selectedFilesForAction)
           }
         }}
-        className={classes.fileInput}
+        disableDragAndDrop
+        darkMode={isDarkTheme}
       />
     </div>
   )
 })
 
 const useClasses = makeStyles((theme) => ({
-  fileInput: {
-    display: 'none',
-  },
   card: {
     maxWidth: 400,
     minWidth: 344,
@@ -227,4 +212,21 @@ const useClasses = makeStyles((theme) => ({
     color: 'white',
     padding: 8,
   },
+  dropzone: ({ isDarkTheme }: any) => ({
+    position: 'relative',
+    margin: 'auto',
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+    width: '90%',
+    height: 50,
+    padding: theme.spacing(1),
+    borderStyle: 'dashed',
+    borderColor: '#eeeeee',
+    borderWidth: 5,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    backgroundColor: isDarkTheme ? 'black' : 'white',
+  }),
 }))

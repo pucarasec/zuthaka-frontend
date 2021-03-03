@@ -38,6 +38,8 @@
 		"react-scripts": "3.4.3",
 		"react-swipeable-views": "^0.13.9",
 		"react-tabs": "^3.1.2",
+		"react-virtualized-auto-sizer": "^1.0.4",
+		"react-window": "^1.8.6",
 		"terminal-in-react": "^4.3.1",
 		"typescript": "^3.9.7",
 		"yup": "^0.29.3"
@@ -69,6 +71,8 @@
 		"@types/react-resizable": "^1.7.2",
 		"@types/react-router-dom": "^5.1.5",
 		"@types/react-swipeable-views": "^0.13.0",
+		"@types/react-virtualized-auto-sizer": "^1.0.0",
+		"@types/react-window": "^1.8.2",
 		"@types/yup": "^0.29.7"
 	}
 }

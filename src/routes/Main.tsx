@@ -63,7 +63,7 @@ export default () => {
       icon: <FaSignOutAlt />,
       onClick: (history) => {
         setUser(null)
-        Storage.removeItem('User')
+        Storage.removeAll()
         history.replace('/login')
       },
     },

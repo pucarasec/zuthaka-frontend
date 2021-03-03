@@ -35,8 +35,15 @@ const removeItem = (key: StorageKeys) => {
   localStorage.removeItem(key)
 }
 
+const removeAll = () => {
+  for (const key in Keys) {
+    removeItem(key as StorageKeys)
+  }
+}
+
 export default {
   getItem,
   saveItem,
   removeItem,
+  removeAll,
 }

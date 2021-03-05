@@ -93,14 +93,6 @@ export default () => {
                 </Typography>
                 <Divider />
                 <DenseTable columns={reduced.columns} rows={reduced.rows} />
-                {/* <table style={{ width: '100%' }}>
-                  {rowData?.options.map(({ name, value }: any) => (
-                    <tr>
-                      <td>{name}</td>
-                      <th>{value}</th>
-                    </tr>
-                  ))}
-                </table> */}
               </div>
             )
           },

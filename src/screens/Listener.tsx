@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import * as Yup from 'yup'
 import { createColumns, createFields, CrudRefProps, FormTypes, TableTypes } from 'material-crud'
-import { IconButton, Tooltip, Typography } from '@material-ui/core'
+import { Divider, IconButton, Tooltip, Typography } from '@material-ui/core'
 import Urls from '../util/Urls'
 import { FaChevronCircleDown, FaChevronCircleUp } from 'react-icons/fa'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
@@ -9,6 +9,7 @@ import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
 import { useHistory } from 'react-router-dom'
 import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
+import DenseTable from '../components/DenseTable'
 
 interface ListenerProps {
   id: number
@@ -87,7 +88,7 @@ export default () => {
           id: 'options',
           title: 'Options',
           type: TableTypes.Custom,
-          height: 80,
+          height: 110,
           align: 'flex-end',
           cellComponent: ({ expandRow, isExpanded }) => (
             <Tooltip title="Open options">
@@ -96,14 +97,32 @@ export default () => {
               </IconButton>
             </Tooltip>
           ),
-          content: (rowData) =>
-            !rowData?.options.length
-              ? 'No rows'
-              : rowData?.options.map(({ name, value }: any) => (
-                  <span key={name}>
-                    {name} ({value})
-                  </span>
-                )),
+          content: (rowData) => {
+            if (!rowData?.options.length) return 'Without options'
+
+            const reduced = rowData.options.reduce((acc: any, item: any) => {
+              if (Object.keys(acc).length === 0)
+                return {
+                  columns: [{ title: item.name }],
+                  rows: [{ name: item.value }],
+                }
+
+              return {
+                columns: [...acc.columns, { title: item.name }],
+                rows: [...acc.rows, { name: item.value }],
+              }
+            }, {})
+
+            return (
+              <div style={{ width: '100%' }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Info about <b>Options</b> is displayed below.
+                </Typography>
+                <Divider />
+                <DenseTable columns={reduced.columns} rows={reduced.rows} />
+              </div>
+            )
+          },
         },
       ]),
     [c2Types, listenerTypes],

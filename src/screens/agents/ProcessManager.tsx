@@ -6,6 +6,9 @@ import { createColumns, TableTypes } from 'material-crud'
 import { RightClickRow } from '../../components/Table/CustomRow'
 import MenuIcon, { MenuIconOptionsProps } from '../../components/MenuIcon'
 import { FaInfoCircle, FaSyringe, FaTimesCircle } from 'react-icons/fa'
+import ZDialog from '../../components/ZDialog'
+import { DialogContent, Typography } from '@material-ui/core'
+import { useNavigator } from 'material-navigator'
 
 interface DataProps {
   name: string
@@ -21,6 +24,10 @@ const initialStateMenu = {
 
 const ProcessManager = () => {
   const { enqueueSnackbar } = useSnackbar()
+  const { setLoading } = useNavigator()
+
+  const [openDialog, setOpenDialog] = useState(false)
+  const handleDialog = useCallback((value: boolean) => setOpenDialog(value), [])
 
   const rowDataRef = useRef<DataProps | null>(null)
   const [data, setData] = useState<DataProps[]>([])
@@ -42,6 +49,7 @@ const ProcessManager = () => {
       onMessage((e) => {
         const { type, reference, content } = JSON.parse(e.data || '{}')
         if (type === 'task.created') {
+          setLoading(true, 'bottomRight')
           switch (typeAction) {
             case 'list':
               send({ type: 'process_manager.list', reference })
@@ -56,6 +64,7 @@ const ProcessManager = () => {
               break
           }
         } else if (content) {
+          setLoading(false)
           switch (type) {
             case 'process_manager.list.result':
               setData(content)
@@ -74,7 +83,7 @@ const ProcessManager = () => {
       })
       send({ type: 'create.task' })
     },
-    [send, onMessage, onError, enqueueSnackbar],
+    [send, onMessage, onError, enqueueSnackbar, setLoading],
   )
 
   const [anchorEl, setAnchorEl] = useState<{ mouseX: null | number; mouseY: null | number }>(
@@ -86,26 +95,20 @@ const ProcessManager = () => {
       {
         icon: <FaSyringe />,
         title: 'Inject',
-        onSelect: () => {
-          handleSocket('inject', rowDataRef.current?.pid)
-        },
+        onSelect: () => handleSocket('inject', rowDataRef.current?.pid),
       },
       {
         icon: <FaTimesCircle />,
         title: 'Terminate',
-        onSelect: () => {
-          handleSocket('terminate', rowDataRef.current?.pid)
-        },
+        onSelect: () => handleSocket('terminate', rowDataRef.current?.pid),
       },
       {
         icon: <FaInfoCircle />,
         title: 'Additional Info',
-        onSelect: () => {
-          console.log(rowDataRef.current?.additional_info)
-        },
+        onSelect: () => handleDialog(true),
       },
     ],
-    [handleSocket],
+    [handleSocket, handleDialog],
   )
 
   const handleRightClickRow = useCallback(({ event, rowData }: RightClickRow) => {
@@ -134,6 +137,16 @@ const ProcessManager = () => {
             : undefined
         }
       />
+      <ZDialog open={openDialog} setOpen={handleDialog} title="Additional info">
+        <DialogContent dividers>
+          <Typography variant="body2" gutterBottom style={{ fontWeight: 'bold' }}>
+            USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
+          </Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            {rowDataRef.current?.additional_info}
+          </Typography>
+        </DialogContent>
+      </ZDialog>
     </div>
   )
 }

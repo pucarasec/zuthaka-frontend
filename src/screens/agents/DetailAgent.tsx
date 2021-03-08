@@ -13,7 +13,7 @@ import Storage from '../../util/Storage'
 import ZTerminal, { TerminalSize } from '../../components/ZTerminal'
 import { DetailWrapperProps } from '../../components/DetailWrapper'
 
-export default ({ detached, ...agent }: DetailWrapperProps) => {
+export default ({ detached, openDetached, ...agent }: DetailWrapperProps) => {
   useNavigatorConfig(
     detached ? { onlyContent: true } : { title: 'Agents', noPadding: true, goBack: true },
   )
@@ -59,10 +59,12 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
                 size="small"
                 onClick={() => {
                   const size = Storage.getItem<{ width: number; height: number }>('DetachedSize')
-                  const sizeString = size?.height
-                    ? `height=${size.height},width=${size.width}`
-                    : 'height=600,width=800'
-                  window.open(window.location.origin + '/detached_agent', '_blank', sizeString)
+                  // const sizeString = size?.height
+                  //   ? `height=${size.height},width=${size.width}`
+                  //   : 'height=600,width=800'
+                  openDetached &&
+                    openDetached({ height: size?.height || 600, width: size?.width || 800 })
+                  // window.open(window.location.origin + '/detached_agent', '_blank', sizeString)
                 }}>
                 <FaExternalLinkAlt />
               </IconButton>

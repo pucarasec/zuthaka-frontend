@@ -34,7 +34,7 @@ export default () => {
     { route: '/listener', component: <Listener />, hidden: !user },
     { route: '/launcher', component: <Launcher />, hidden: !user },
     { route: '/agents', component: <Agents />, hidden: !user },
-    { route: '/detail_agent', component: <DetailWrapper detached={false} />, hidden: !user },
+    { route: '/detail_agent', component: <DetailWrapper />, hidden: !user },
     { route: '/detached_agent', component: <DetailWrapper detached />, hidden: !user },
     { route: '/changePass', component: <ChangePassword />, hidden: !user },
   ])

@@ -20,7 +20,7 @@ export const useColorTheme = () => {
     localStorage.setItem('theme', color)
   }, [color])
 
-  return { setColor, color }
+  return { setColor, color, isDarkTheme: color === 'dark' }
 }
 
 export const getTheme = (color: ThemeOptions) => {

@@ -8,13 +8,14 @@ import {
   callWs,
 } from 'material-crud'
 import Urls from '../util/Urls'
-import { Tooltip, IconButton, Typography } from '@material-ui/core'
+import { Tooltip, IconButton, Typography, Divider } from '@material-ui/core'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
 import FullCrud, { renderType, WSResponse } from '../components/FullCrud'
 import useAxios from '../util/useAxios'
 import * as Yup from 'yup'
 import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
-import { FaDownload } from 'react-icons/fa'
+import { FaChevronCircleDown, FaChevronCircleUp, FaDownload } from 'react-icons/fa'
+import DenseTable from '../components/DenseTable'
 
 export default () => {
   useNavigatorConfig({ title: 'Launchers', noPadding: false })
@@ -65,13 +66,53 @@ export default () => {
           title: 'Listener Name',
           cellComponent: ({ rowData }) =>
             listenersTypes?.results.find((x: any) => x.id === rowData.listener_id)?.name || '-',
-          width: 1,
+          width: 2,
         },
         {
           id: 'creation_date',
           title: 'Date',
           type: TableTypes.Date,
           align: 'center',
+        },
+        {
+          id: 'expand',
+          title: 'Options',
+          type: TableTypes.Custom,
+          height: 110,
+          width: 1,
+          cellComponent: ({ expandRow, isExpanded }) => {
+            return (
+              <IconButton onClick={expandRow}>
+                {isExpanded ? <FaChevronCircleUp /> : <FaChevronCircleDown />}
+              </IconButton>
+            )
+          },
+          content: (rowData) => {
+            if (!rowData?.options.length) return 'Without options'
+
+            const reduced = rowData.options.reduce((acc: any, item: any) => {
+              if (Object.keys(acc).length === 0)
+                return {
+                  columns: [{ title: item.name }],
+                  rows: [{ name: item.value }],
+                }
+
+              return {
+                columns: [...acc.columns, { title: item.name }],
+                rows: [...acc.rows, { name: item.value }],
+              }
+            }, {})
+
+            return (
+              <div style={{ width: '100%' }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Info about <b>Options</b> is displayed below.
+                </Typography>
+                <Divider />
+                <DenseTable columns={reduced.columns} rows={reduced.rows} />
+              </div>
+            )
+          },
         },
       ]),
     [types, listenersTypes],

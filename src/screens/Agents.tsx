@@ -8,6 +8,7 @@ import { Tab, TabList, TabPanel, Tabs } from 'react-tabs'
 import { makeStyles } from '@material-ui/core'
 import 'react-tabs/style/react-tabs.css'
 import DetailWrapper, { DetailWrapperProps } from '../components/DetailWrapper'
+import Storage from '../util/Storage'
 
 export default () => {
   useNavigatorConfig({ title: 'Agents', noPadding: false, goBack: false })
@@ -28,28 +29,36 @@ export default () => {
     },
   })
 
-  const [lastAgents, setLastAgents] = useState<DetailWrapperProps[]>([])
+  const [lastAgents, setLastAgents] = useState<DetailWrapperProps[]>(
+    Storage.getItem('LastAgents') || [],
+  )
+  const callSetAgents = useCallback((rowData, removeFirst?: boolean) => {
+    setLastAgents((acc) => {
+      if (removeFirst) acc.shift()
+      const data = [...acc, rowData]
+      Storage.saveItem('LastAgents', data)
+      return data
+    })
+  }, [])
+
   const [value, setValue] = useState(0)
   const selectAgent = useCallback((newValue: number) => setValue(newValue), [])
 
   const handleChange = useCallback(
     (event, rowData: DetailWrapperProps, index) => {
       if (lastAgents.length < 3 && !lastAgents.some(({ id }) => id === rowData.id)) {
-        setLastAgents((acc) => [...acc, rowData])
+        callSetAgents(rowData)
         selectAgent(lastAgents.length + 1)
       } else {
         const index = lastAgents.findIndex(({ id }) => id === rowData.id)
         if (index >= 0) selectAgent(index + 1)
         else {
-          setLastAgents((acc) => {
-            acc.shift()
-            return [...acc, rowData]
-          })
+          callSetAgents(rowData, true)
           selectAgent(lastAgents.length + 1)
         }
       }
     },
-    [lastAgents, selectAgent],
+    [lastAgents, selectAgent, callSetAgents],
   )
 
   useEffect(() => {

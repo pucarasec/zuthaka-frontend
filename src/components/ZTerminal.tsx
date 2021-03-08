@@ -1,9 +1,9 @@
-import { IconButton, makeStyles } from '@material-ui/core'
-import { useNavigator } from 'material-navigator'
 import React from 'react'
+import { IconButton, makeStyles } from '@material-ui/core'
 import { FaWindowMinimize, FaWindowRestore, FaWindowMaximize } from 'react-icons/fa'
 import Terminal from 'terminal-in-react'
 import { useSocket } from '../util/SocketContext'
+import { useColorTheme } from '../util/Theme'
 import { DetailWrapperProps } from './DetailWrapper'
 
 export type TerminalSize = 'minimizezd' | 'normal' | 'maximized'
@@ -14,10 +14,10 @@ interface Props extends DetailWrapperProps {
 }
 
 export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
-  const { send, onMessage, onError } = useSocket()
+  const { isDarkTheme } = useColorTheme()
+  const classes = useClasses({ terminalSize, isDarkTheme })
 
-  const { setLoading } = useNavigator()
-  const classes = useClasses({ terminalSize })
+  const { send, onMessage, onError } = useSocket()
 
   return (
     <div className={classes.terminal}>
@@ -34,19 +34,18 @@ export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
         commandPassThrough={(cmd, print: (message: string) => void) => {
           const [command] = cmd
           onMessage((e) => {
-            const { type, reference, content } = JSON.parse(e.data || '{}')
+            const { type, reference, content, error } = JSON.parse(e.data || '{}')
             if (type === 'task.created') {
               send({ type: 'shell.execute', command, reference })
             } else if (content) {
-              setLoading(false)
               print(content)
+            } else if (error) {
+              print(error)
             }
           })
           onError((e) => {
-            setLoading(false)
             print('Command not found')
           })
-          setLoading(true)
           send({ type: 'create.task' })
         }}
       />
@@ -83,12 +82,12 @@ const useClasses = makeStyles((theme) => ({
     height: terminalSize === 'normal' ? 175 : terminalSize === 'maximized' ? '100%' : 24,
     position: 'relative',
   }),
-  terminalBtns: {
-    backgroundColor: 'white',
+  terminalBtns: ({ isDarkTheme }: any) => ({
+    backgroundColor: isDarkTheme ? 'black' : 'white',
     paddingRight: theme.spacing(1),
     paddingLeft: theme.spacing(1),
     position: 'absolute',
     top: 0,
     right: 0,
-  },
+  }),
 }))

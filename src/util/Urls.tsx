@@ -3,6 +3,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL as string
 export default {
   baseSocket: baseUrl.replace('http://', 'ws://'),
   socket: (id: number) => `/agents/${id}/interact/`,
+
   c2: `${baseUrl}/c2/`,
   c2_types: `${baseUrl}/c2/types/`,
 
@@ -19,4 +20,6 @@ export default {
 
   login: `${baseUrl}/api-token-auth/`,
   changePassword: `${baseUrl}/change_password/`,
+  tasks: `${baseUrl}/tasks/`,
+  tasks_download: `${baseUrl}/download/`,
 }

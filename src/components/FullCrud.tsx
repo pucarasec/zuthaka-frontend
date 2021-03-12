@@ -50,6 +50,7 @@ export default forwardRef<CrudRefProps, FullCrudProps>((props, ref) => {
           page: cList.current,
           limit: 10,
           totalDocs: cList.count,
+          totalPages: cList.count >= 10 ? Math.ceil(cList.count / 10) : 1,
         }),
         new: (_: any, response: any) => response,
         edit: (_: any, response: any) => response,

@@ -3,7 +3,7 @@ import { useSocket } from '../../util/SocketContext'
 import { useSnackbar } from 'notistack'
 import CustomTable from '../../components/Table/CustomTable'
 import { createColumns, TableTypes } from 'material-crud'
-import { RightClickRow } from '../../components/Table/CustomRow'
+import { ClickRow } from '../../components/Table/CustomRow'
 import MenuIcon, { MenuIconOptionsProps } from '../../components/MenuIcon'
 import { FaInfoCircle, FaSyringe, FaTimesCircle } from 'react-icons/fa'
 import ZDialog from '../../components/ZDialog'
@@ -79,6 +79,7 @@ const ProcessManager = () => {
         }
       })
       onError((e) => {
+        setLoading(false)
         enqueueSnackbar('Error ocurred')
       })
       send({ type: 'create.task' })
@@ -111,7 +112,7 @@ const ProcessManager = () => {
     [handleSocket, handleDialog],
   )
 
-  const handleRightClickRow = useCallback(({ event, rowData }: RightClickRow) => {
+  const handleRightClickRow = useCallback(({ event, rowData }: ClickRow) => {
     rowDataRef.current = rowData
     setAnchorEl({ mouseX: event.clientX - 2, mouseY: event.clientY - 4 })
   }, [])

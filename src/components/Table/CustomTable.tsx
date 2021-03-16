@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles, Paper, Typography } from '@material-ui/core'
 import { useWindowSize } from 'material-crud'
-import CustomRow, { RightClickRow } from './CustomRow'
+import CustomRow, { ClickRow } from './CustomRow'
 import { ColumnsProps } from 'material-crud/dist/components/Table/TableTypes'
 import { VariableSizeList as List } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
@@ -9,12 +9,14 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 interface TableProps {
   columns: ColumnsProps[]
   data: any[]
-  onRightClickRow?: (props: RightClickRow) => void
+  tableHeight?: number
+  onClickRow?: (props: ClickRow) => void
+  onRightClickRow?: (props: ClickRow) => void
 }
 
-const CustomTable = ({ columns, data, onRightClickRow }: TableProps) => {
+const CustomTable = ({ columns, data, tableHeight, onClickRow, onRightClickRow }: TableProps) => {
   const { height } = useWindowSize()
-  const classes = useClasses({ height })
+  const classes = useClasses({ height: tableHeight || height })
 
   return (
     <Paper elevation={5} className={classes.container}>
@@ -26,13 +28,18 @@ const CustomTable = ({ columns, data, onRightClickRow }: TableProps) => {
       )}
       <div style={{ flex: 1 }}>
         <AutoSizer>
-          {({ height: tableHeight, width }) => (
-            <List height={tableHeight} itemCount={data.length} itemSize={() => 48} width={width}>
+          {({ height: autoHeight, width }) => (
+            <List
+              height={tableHeight || autoHeight}
+              itemCount={data.length}
+              itemSize={() => 48}
+              width={width}>
               {(props) => (
                 <CustomRow
                   {...props}
                   columns={columns}
                   rowData={data[props.index]}
+                  onClickRow={onClickRow}
                   onRightClickRow={onRightClickRow}
                 />
               )}

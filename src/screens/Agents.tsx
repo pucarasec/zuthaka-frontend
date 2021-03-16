@@ -45,7 +45,7 @@ export default () => {
   const selectAgent = useCallback((newValue: number) => setValue(newValue), [])
 
   const handleChange = useCallback(
-    (event, rowData: DetailWrapperProps, index) => {
+    (event, rowData: DetailWrapperProps) => {
       if (lastAgents.length < 3 && !lastAgents.some(({ id }) => id === rowData.id)) {
         callSetAgents(rowData)
         selectAgent(lastAgents.length + 1)

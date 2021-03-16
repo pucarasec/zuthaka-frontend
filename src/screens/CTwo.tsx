@@ -11,7 +11,7 @@ import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
 import * as Yup from 'yup'
 import DenseTable from '../components/DenseTable'
 
-export default () => {
+const CTwo = () => {
   useNavigatorConfig({ title: 'Settings - C2', noPadding: false })
   const { setLoading } = useNavigator()
   const { push } = useHistory()
@@ -160,16 +160,8 @@ export default () => {
         //   title: 'C2',
         //   placeholder: 'Select one C2',
         // },
-        {
-          id: 'created_since',
-          type: FormTypes.Date,
-          title: 'Created Since',
-        },
-        {
-          id: 'created_until',
-          type: FormTypes.Date,
-          title: 'Created Until',
-        },
+        { id: 'created_since', type: FormTypes.Date, title: 'Created Since' },
+        { id: 'created_until', type: FormTypes.Date, title: 'Created Until' },
       ]),
     [],
   )
@@ -215,3 +207,5 @@ export default () => {
     />
   )
 }
+
+export default CTwo

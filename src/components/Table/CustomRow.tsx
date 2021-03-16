@@ -5,22 +5,24 @@ import { ColumnsProps } from 'material-crud/dist/components/Table/TableTypes'
 import CustomCell from './CustomCell'
 import CustomHeader from './CustomHeader'
 
-export interface RightClickRow {
+export interface ClickRow {
   event: React.MouseEvent<HTMLDivElement, MouseEvent>
   rowData: any
   index: number
 }
 
 interface RowProps extends Partial<ListChildComponentProps> {
-  onRightClickRow?: (props: RightClickRow) => void
+  onClickRow?: (props: ClickRow) => void
+  onRightClickRow?: (props: ClickRow) => void
   isHeader?: boolean
   index: number
   columns: ColumnsProps[]
   rowData: any
 }
 
-const CustomRow = ({ index, style, isHeader, columns, onRightClickRow, rowData }: RowProps) => {
-  const classes = useClasses({ index })
+const CustomRow = ({ index, isHeader, columns, rowData, ...props }: RowProps) => {
+  const { style, onClickRow, onRightClickRow } = props
+  const classes = useClasses({ index, onClickRow })
 
   const renderContent = useCallback(() => {
     if (isHeader) {
@@ -32,6 +34,11 @@ const CustomRow = ({ index, style, isHeader, columns, onRightClickRow, rowData }
 
   return (
     <TableRow
+      onClick={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        event.preventDefault()
+        event.stopPropagation()
+        onClickRow && onClickRow({ event, rowData, index })
+      }}
       onContextMenu={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         event.preventDefault()
         event.stopPropagation()
@@ -46,10 +53,11 @@ const CustomRow = ({ index, style, isHeader, columns, onRightClickRow, rowData }
 }
 
 const useClasses = makeStyles((theme) => ({
-  row: ({ index }: any) => ({
+  row: ({ index, onClickRow }: any) => ({
     display: 'flex',
     backgroundColor:
       index % 2 !== 0 ? undefined : theme.palette.grey[theme.palette.type === 'dark' ? 600 : 200],
+    cursor: onClickRow ? 'pointer' : undefined,
   }),
   rowHeader: {
     paddingRight: theme.spacing(2),

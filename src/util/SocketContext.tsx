@@ -51,7 +51,12 @@ type OnErrorProps = (e: CloseEvent) => void
 
 export const useSocket = () => {
   const { socket, refresh, id } = useContext(SocketContext)
-  const callSend = useCallback((data: object) => socket?.send(JSON.stringify(data)), [socket])
+
+  const isConnected = useMemo(() => socket?.readyState === socket?.OPEN, [socket])
+  const callSend = useCallback(
+    (data: object) => isConnected && socket?.send(JSON.stringify(data)),
+    [socket, isConnected],
+  )
   const callOnMessage = useCallback(
     (e: OnMessageProps) => {
       if (socket) socket.onmessage = (ev) => e(ev)
@@ -70,5 +75,5 @@ export const useSocket = () => {
     [socket, refresh],
   )
 
-  return { send: callSend, onMessage: callOnMessage, onError: callOnError, id }
+  return { send: callSend, onMessage: callOnMessage, onError: callOnError, id, isConnected }
 }

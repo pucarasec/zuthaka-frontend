@@ -1,6 +1,13 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
-import { ChonkyActions, FullFileBrowser } from 'chonky'
-import { Card, CardActions, CircularProgress, makeStyles, Typography } from '@material-ui/core'
+import { ChonkyActions, ChonkyIconName, defineFileAction, FullFileBrowser } from 'chonky'
+import {
+  Card,
+  CardActions,
+  CircularProgress,
+  DialogContent,
+  makeStyles,
+  Typography,
+} from '@material-ui/core'
 import { SnackbarKey, useSnackbar } from 'notistack'
 import './chonky.css'
 import { useSocket } from '../../util/SocketContext'
@@ -8,6 +15,7 @@ import { callWs, useUser } from 'material-crud'
 import Urls from '../../util/Urls'
 import { useDropzone } from 'react-dropzone'
 import { useColorTheme } from '../../util/Theme'
+import ZDialog from '../../components/ZDialog'
 
 export default memo(() => {
   const { isDarkTheme } = useColorTheme()
@@ -18,15 +26,18 @@ export default memo(() => {
 
   const snacksRef = useRef<SnackbarKey[]>([])
   const listRef = useRef(false)
-  // const uploadFileRef = useRef<HTMLInputElement | null>(null)
+
   const fileRef = useRef<string | null>(null)
   const downloadRef = useRef('')
 
+  const [openDialog, setOpenDialog] = useState(false)
+  const handleDialog = useCallback((value: boolean) => setOpenDialog(value), [])
+
+  const rowDataRef = useRef<string[] | null>(null)
+
   const [files, setFiles] = useState<any[]>([null])
-  const folderChain = [
-    { id: 'home', name: 'Home', openable: false },
-    { id: 'dev2', name: 'Dev2' },
-  ]
+  const [actualFolder, setActualFolder] = useState('/home/')
+  const [folderChain, setFolderChain] = useState([{ id: 'home', name: 'Home' }])
 
   const showNotification = useCallback(
     (message: string) => {
@@ -61,13 +72,13 @@ export default memo(() => {
         if (type === 'task.created') {
           switch (typeAction) {
             case 'list':
-              send({ type: 'file_manager.list_directory', directory: '/home/dev2/', reference })
+              send({ type: 'file_manager.list_directory', directory: data, reference })
               break
             case 'download':
-              downloadRef.current = data[0].id
+              downloadRef.current = data
               send({
                 type: 'file_manager.download',
-                file_path: `/home/dev2/${data[0].id}`,
+                file_path: `${actualFolder}${data}`,
                 reference,
               })
               break
@@ -83,7 +94,7 @@ export default memo(() => {
               })
               if (response) {
                 fileRef.current = response?.transition_file
-                send({ type: 'file_manager.upload', target_directory: '/home/dev2/', reference })
+                send({ type: 'file_manager.upload', target_directory: actualFolder, reference })
               }
               break
             default:
@@ -97,8 +108,19 @@ export default memo(() => {
               case 'file_manager.list_directory.result':
                 const { files, directories } = content
                 setFiles([
-                  ...files.map(({ name }: any) => ({ id: name, name })),
-                  ...directories.map(({ name }: any) => ({ id: name, name, isDir: true })),
+                  ...files.map(({ name, size, date, additional_info }: any) => ({
+                    id: name,
+                    name,
+                    size: parseInt(size),
+                    modDate: date,
+                    additional_info,
+                  })),
+                  ...directories.map(({ name, date }: any) => ({
+                    id: name,
+                    name,
+                    isDir: true,
+                    modDate: date,
+                  })),
                 ])
                 break
               case 'file_manager.download.result':
@@ -134,13 +156,14 @@ export default memo(() => {
       })
       send({ type: 'create.task' })
     },
-    [onMessage, onError, showNotification, send, id, headers],
+    [onMessage, onError, showNotification, send, id, headers, actualFolder],
   )
 
   const { getRootProps, getInputProps } = useDropzone({
     maxFiles: 3,
     noDragEventsBubbling: true,
     noKeyboard: true,
+    noClick: true,
     onDrop: (files) => {
       if (files) {
         for (const file of files) {
@@ -164,29 +187,101 @@ export default memo(() => {
 
   useEffect(() => {
     if (!listRef.current) {
-      handleSocket('list')
+      handleSocket('list', actualFolder)
       listRef.current = true
     }
-  }, [handleSocket])
+  }, [handleSocket, actualFolder])
+
+  const infoAction = defineFileAction(
+    {
+      id: 'infoAction',
+      fileFilter: (file: any) => !file?.isDir,
+      requiresSelection: true,
+      button: {
+        name: 'Additional Info',
+        toolbar: true,
+        icon: ChonkyIconName.info,
+        iconOnly: true,
+        tooltip: 'Additional Info',
+      },
+    } as const,
+    ({ state }) => {
+      rowDataRef.current = state.selectedFilesForAction.map(
+        ({ additional_info }) => additional_info,
+      )
+      setOpenDialog(true)
+    },
+  )
+
+  const downloadAction = defineFileAction(
+    {
+      id: 'downloadAction',
+      requiresSelection: true,
+      fileFilter: (file: any) => !file?.isDir,
+      button: {
+        name: 'Download',
+        toolbar: true,
+        icon: ChonkyIconName.download,
+        tooltip: 'Download',
+      },
+    } as const,
+    ({ state }) => {
+      for (const file of state.selectedFilesForAction) {
+        if (!file.isDir) {
+          handleSocket('download', file.name)
+        }
+      }
+    },
+  )
 
   return (
-    <div id="divContainer" style={{ height: '100%' }}>
-      <div {...getRootProps({ className: classes.dropzone })}>
-        <input {...getInputProps({ multiple: true, type: 'file' })} />
-        <p>To upload drag and drop some files here, or click to select files. Max 3 files.</p>
-      </div>
+    <div id="divContainer" {...getRootProps({ className: classes.dropzone })}>
+      <input {...getInputProps({ multiple: true, type: 'file' })} />
       <FullFileBrowser
         files={files}
         folderChain={folderChain}
-        fileActions={[ChonkyActions.DownloadFiles]}
-        onFileAction={(action) => {
-          if (action.id === ChonkyActions.DownloadFiles.id) {
-            handleSocket('download', action.state.selectedFilesForAction)
+        clearSelectionOnOutsideClick
+        darkMode={isDarkTheme}
+        disableDefaultFileActions={[
+          ChonkyActions.SelectAllFiles.id,
+          ChonkyActions.OpenSelection.id,
+        ]}
+        defaultFileViewActionId={ChonkyActions.EnableListView.id}
+        fileActions={[downloadAction, infoAction]}
+        onFileAction={(data) => {
+          if (data.id === ChonkyActions.OpenFiles.id) {
+            const { targetFile } = data.payload
+            const stringPath = actualFolder.split('/')
+            const index = stringPath.findIndex((text) => text === targetFile?.id)
+            const newActualFolder = `${stringPath.slice(0, index + 1).join('/')}/`
+            setActualFolder(newActualFolder)
+            setFolderChain((acc) => {
+              const i = acc.findIndex(({ id }) => id === targetFile?.id)
+              return acc.slice(0, i + 1)
+            })
+            handleSocket('list', newActualFolder)
+          } else if (data.id === ChonkyActions.MouseClickFile.id) {
+            const { file, ctrlKey } = data.payload
+            if (file.isDir && !ctrlKey) {
+              setActualFolder((acc) => `${acc}${file.id}/`)
+              setFolderChain((acc) => [...acc, { id: file.id, name: file.id }])
+              handleSocket('list', `${actualFolder}${file.id}`)
+            }
           }
         }}
-        disableDragAndDrop
-        darkMode={isDarkTheme}
       />
+      <ZDialog open={openDialog} setOpen={handleDialog} title="Additional info" maxWidth="sm">
+        <DialogContent dividers>
+          <Typography variant="body2" gutterBottom style={{ fontWeight: 'bold' }}>
+            USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
+          </Typography>
+          {rowDataRef.current?.map((message) => (
+            <Typography key={message} variant="subtitle1" gutterBottom>
+              {message}
+            </Typography>
+          ))}
+        </DialogContent>
+      </ZDialog>
     </div>
   )
 })
@@ -213,20 +308,21 @@ const useClasses = makeStyles((theme) => ({
     padding: 8,
   },
   dropzone: ({ isDarkTheme }: any) => ({
-    position: 'relative',
-    margin: 'auto',
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-    width: '90%',
-    height: 50,
-    padding: theme.spacing(1),
-    borderStyle: 'dashed',
-    borderColor: '#eeeeee',
-    borderWidth: 5,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'column',
-    backgroundColor: isDarkTheme ? 'black' : 'white',
+    // position: 'relative',
+    // margin: 'auto',
+    // marginTop: theme.spacing(1),
+    // marginBottom: theme.spacing(1),
+    // width: '100%',
+    height: '100%',
+    zIndex: theme.zIndex.drawer + 1,
+    // padding: theme.spacing(1),
+    // borderStyle: 'dashed',
+    // borderColor: '#eeeeee',
+    // borderWidth: 5,
+    // display: 'none',
+    // alignItems: 'center',
+    // justifyContent: 'center',
+    // flexDirection: 'column',
+    // backgroundColor: isDarkTheme ? 'black' : 'white',
   }),
 }))

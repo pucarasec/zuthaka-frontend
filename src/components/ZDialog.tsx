@@ -20,6 +20,7 @@ interface DialogProps {
   actions?: { title: string; onClick: () => void; color?: Color }[]
   open: boolean
   setOpen: (open: boolean) => void
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 }
 
 const Transition = forwardRef(function Transition(
@@ -29,14 +30,19 @@ const Transition = forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />
 })
 
-const ZDialog = ({ title, children, actions, open, setOpen }: DialogProps) => {
+const ZDialog = ({ title, children, actions, open, setOpen, maxWidth }: DialogProps) => {
   const classes = useClasses()
 
   return (
-    <Dialog TransitionComponent={Transition} onClose={() => setOpen(false)} open={open}>
+    <Dialog
+      TransitionComponent={Transition}
+      onClose={() => setOpen(false)}
+      open={open}
+      maxWidth={maxWidth}
+      fullWidth={maxWidth !== undefined}>
       {title && (
         <DialogTitle>
-          <Typography variant="h6">{title}</Typography>
+          {title}
           <IconButton
             aria-label="close"
             className={classes.closeButton}

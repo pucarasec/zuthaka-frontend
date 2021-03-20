@@ -98,7 +98,7 @@ export default () => {
             </Tooltip>
           ),
           content: (rowData) => {
-            if (!rowData?.options.length) return 'Without options'
+            if (!rowData?.options || !rowData?.options.length) return 'Without options'
 
             const reduced = rowData.options.reduce((acc: any, item: any) => {
               if (Object.keys(acc).length === 0)

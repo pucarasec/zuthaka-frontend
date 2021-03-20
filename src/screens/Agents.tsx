@@ -77,7 +77,7 @@ export default () => {
         {
           id: 'c2',
           title: 'C2',
-          width: 1,
+          width: 2,
           align: 'center',
           cellComponent: ({ rowData }) =>
             c2Types?.results.find((x) => x.id === rowData.c2)?.name || '-',
@@ -85,13 +85,13 @@ export default () => {
         {
           id: 'listener',
           title: 'Listener',
-          width: 1,
+          width: 2,
           align: 'center',
           cellComponent: ({ rowData }) =>
             listenersTypes?.results.find((x) => x.id === rowData.listener)?.name || '-',
         },
-        { id: 'username', title: 'Username', width: 2 },
-        { id: 'hostname', title: 'Hostname', width: 2 },
+        { id: 'username', title: 'Username', width: 2, align: 'center' },
+        { id: 'hostname', title: 'Hostname', width: 3, align: 'center' },
       ]),
     [c2Types, listenersTypes],
   )

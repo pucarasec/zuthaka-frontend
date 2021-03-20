@@ -41,6 +41,7 @@ export default forwardRef<CrudRefProps, FullCrudProps>((props, ref) => {
 
   return (
     <Crud
+      noBorder
       showHelpIcon
       ref={ref}
       actions={{ edit: true, delete: true }}

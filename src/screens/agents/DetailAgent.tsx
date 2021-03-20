@@ -80,7 +80,7 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
               <FileManager />
             </TabPanel>
             <TabPanel value={value} index={2}>
-              <ProcessManager />
+              <ProcessManager terminalSize={terminalSize} />
             </TabPanel>
             <TabPanel value={value} index={3}>
               <PostExploitation />

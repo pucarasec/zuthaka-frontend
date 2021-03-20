@@ -29,11 +29,7 @@ const CustomTable = ({ columns, data, tableHeight, onClickRow, onRightClickRow }
       <div style={{ flex: 1 }}>
         <AutoSizer>
           {({ height: autoHeight, width }) => (
-            <List
-              height={tableHeight || autoHeight}
-              itemCount={data.length}
-              itemSize={() => 48}
-              width={width}>
+            <List height={autoHeight} itemCount={data.length} itemSize={() => 48} width={width}>
               {(props) => (
                 <CustomRow
                   {...props}

@@ -54,11 +54,14 @@ export default () => {
           cellComponent: ({ rowData }) =>
             types?.results.find((x: any) => x.id === rowData.id)?.name || '-',
           width: 2,
+          align: 'center',
         },
         {
           id: 'listener_id',
           type: TableTypes.String,
           title: 'Listener ID',
+          width: 2,
+          align: 'center',
         },
         {
           id: 'listener_name',
@@ -67,12 +70,14 @@ export default () => {
           cellComponent: ({ rowData }) =>
             listenersTypes?.results.find((x: any) => x.id === rowData.listener_id)?.name || '-',
           width: 2,
+          align: 'center',
         },
         {
           id: 'creation_date',
           title: 'Date',
           type: TableTypes.Date,
           align: 'center',
+          width: 2,
         },
         {
           id: 'expand',
@@ -80,6 +85,7 @@ export default () => {
           type: TableTypes.Custom,
           height: 110,
           width: 1,
+          align: 'center',
           cellComponent: ({ expandRow, isExpanded }) => {
             return (
               <IconButton onClick={expandRow}>
@@ -88,7 +94,7 @@ export default () => {
             )
           },
           content: (rowData) => {
-            if (!rowData?.options.length) return 'Without options'
+            if (!rowData?.options || !rowData?.options.length) return 'Without options'
 
             const reduced = rowData.options.reduce((acc: any, item: any) => {
               if (Object.keys(acc).length === 0)
@@ -214,6 +220,7 @@ export default () => {
 
   return (
     <FullCrud
+      noBorder={false}
       ref={(e) => (crudRef.current = e)}
       description="Launcher"
       name="Launcher"

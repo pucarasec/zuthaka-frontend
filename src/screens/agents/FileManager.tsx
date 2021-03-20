@@ -93,6 +93,7 @@ export default memo(() => {
                 data: formData,
               })
               if (response) {
+                console.log(response)
                 fileRef.current = response?.transition_file
                 send({ type: 'file_manager.upload', target_directory: actualFolder, reference })
               }
@@ -111,15 +112,18 @@ export default memo(() => {
                   ...files.map(({ name, size, date, additional_info }: any) => ({
                     id: name,
                     name,
-                    size: parseInt(size),
+                    size: parseInt(size) || undefined,
                     modDate: date,
                     additional_info,
+                    draggable: false,
                   })),
                   ...directories.map(({ name, date }: any) => ({
                     id: name,
                     name,
                     isDir: true,
                     modDate: date,
+                    droppable: false,
+                    selectable: false,
                   })),
                 ])
                 break
@@ -143,7 +147,17 @@ export default memo(() => {
               case 'file_manager.upload.result':
                 showNotification(content)
                 const newFile = fileRef.current?.replace('/', '')
-                setFiles((acc) => [...acc, { id: newFile, name: newFile }])
+                // setFiles((acc) => [
+                //   ...acc,
+                //   {
+                //     id: newFile,
+                //     name: newFile,
+                //     size: parseInt(newFile.) || undefined,
+                //     modDate: date,
+                //     additional_info,
+                //     draggable: false,
+                //   },
+                // ])
                 break
               default:
                 break
@@ -158,20 +172,6 @@ export default memo(() => {
     },
     [onMessage, onError, showNotification, send, id, headers, actualFolder],
   )
-
-  const { getRootProps, getInputProps } = useDropzone({
-    maxFiles: 3,
-    noDragEventsBubbling: true,
-    noKeyboard: true,
-    noClick: true,
-    onDrop: (files) => {
-      if (files) {
-        for (const file of files) {
-          handleSocket('upload', file)
-        }
-      }
-    },
-  })
 
   useEffect(() => {
     const parent = document.getElementById('divContainer')?.parentElement
@@ -234,9 +234,38 @@ export default memo(() => {
     },
   )
 
+  const onDrop = useCallback(
+    (files) => {
+      console.log(files)
+      const divDragFiles = document.getElementById('divDragFiles')
+      if (divDragFiles) divDragFiles.style.zIndex = '0'
+      for (const file of files) {
+        handleSocket('upload', file)
+      }
+    },
+    [handleSocket],
+  )
+
+  const { getInputProps, getRootProps } = useDropzone({
+    onDrop,
+    noClick: true,
+    multiple: true,
+    noKeyboard: true,
+    maxFiles: 3,
+    noDragEventsBubbling: true,
+  })
+
   return (
-    <div id="divContainer" {...getRootProps({ className: classes.dropzone })}>
-      <input {...getInputProps({ multiple: true, type: 'file' })} />
+    <div
+      id="divContainer"
+      style={{ height: '100%' }}
+      onDragEnter={(e) => {
+        const divDragFiles = document.getElementById('divDragFiles')
+        if (divDragFiles) divDragFiles.style.zIndex = '9999'
+      }}>
+      <div id="divDragFiles" {...getRootProps({ className: classes.dropzone })}>
+        <input {...getInputProps()} />
+      </div>
       <FullFileBrowser
         files={files}
         folderChain={folderChain}
@@ -308,21 +337,8 @@ const useClasses = makeStyles((theme) => ({
     padding: 8,
   },
   dropzone: ({ isDarkTheme }: any) => ({
-    // position: 'relative',
-    // margin: 'auto',
-    // marginTop: theme.spacing(1),
-    // marginBottom: theme.spacing(1),
-    // width: '100%',
     height: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    // padding: theme.spacing(1),
-    // borderStyle: 'dashed',
-    // borderColor: '#eeeeee',
-    // borderWidth: 5,
-    // display: 'none',
-    // alignItems: 'center',
-    // justifyContent: 'center',
-    // flexDirection: 'column',
-    // backgroundColor: isDarkTheme ? 'black' : 'white',
+    width: '100%',
+    position: 'fixed',
   }),
 }))

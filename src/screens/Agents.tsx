@@ -129,8 +129,8 @@ export default () => {
 
 const useClasses = makeStyles((theme) => ({
   root: {
-    padding: theme.spacing(2),
-    marginLeft: 60,
-    marginRight: 60,
+    padding: theme.spacing(1),
+    marginLeft: 30,
+    marginRight: 30,
   },
 }))

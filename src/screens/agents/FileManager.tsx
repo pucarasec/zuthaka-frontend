@@ -236,7 +236,6 @@ export default memo(() => {
 
   const onDrop = useCallback(
     (files) => {
-      console.log(files)
       const divDragFiles = document.getElementById('divDragFiles')
       if (divDragFiles) divDragFiles.style.zIndex = '0'
       for (const file of files) {

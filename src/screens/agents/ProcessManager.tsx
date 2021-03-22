@@ -9,6 +9,7 @@ import { FaInfoCircle, FaSyringe, FaTimesCircle } from 'react-icons/fa'
 import ZDialog from '../../components/ZDialog'
 import { DialogContent, Typography } from '@material-ui/core'
 import { useNavigator } from 'material-navigator'
+import { TerminalSize } from '../../components/ZTerminal'
 
 interface DataProps {
   name: string
@@ -17,12 +18,16 @@ interface DataProps {
   additional_info: string
 }
 
+interface Props {
+  terminalSize: TerminalSize
+}
+
 const initialStateMenu = {
   mouseX: null,
   mouseY: null,
 }
 
-const ProcessManager = () => {
+const ProcessManager = ({ terminalSize }: Props) => {
   const { enqueueSnackbar } = useSnackbar()
   const { setLoading } = useNavigator()
 
@@ -126,7 +131,12 @@ const ProcessManager = () => {
 
   return (
     <div>
-      <CustomTable data={data} columns={columns} onRightClickRow={handleRightClickRow} />
+      <CustomTable
+        data={data}
+        columns={columns}
+        onRightClickRow={handleRightClickRow}
+        tableHeight={terminalSize === 'minimizezd' ? 400 : 250}
+      />
       <MenuIcon
         callCloseMenu={callCloseMenu}
         options={menuOptions}

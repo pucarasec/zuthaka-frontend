@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { CenteredCard, createFields, Form, FormTypes, useUser } from 'material-crud'
 import Urls from '../util/Urls'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -24,7 +24,7 @@ export default () => {
       setUser(response)
       history.replace(from)
     }
-  }, [setUser, history, response, from, user])
+  }, [setUser, history, response, from, state, user])
 
   const fields = useMemo(
     () =>

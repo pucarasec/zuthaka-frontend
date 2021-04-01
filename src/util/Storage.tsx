@@ -4,6 +4,7 @@ const Keys = {
   ListenerPins: 'ListenerPins',
   DetachedSize: 'DetachedSize',
   LastAgents: 'LastAgents',
+  LoggingZuthaka: 'LoggingZuthaka',
 }
 
 type StorageKeys = keyof typeof Keys

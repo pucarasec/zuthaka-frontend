@@ -25,7 +25,7 @@ const Home = () => {
         columns={columns}
         name="Tasks"
         actions={{ pinToTop: true }}
-        rowStyle={(rowData, index) => {
+        rowStyle={(rowData) => {
           if (rowData.completed) return { backgroundColor: 'forestgreen' }
           return { backgroundColor: 'darkorange' }
         }}

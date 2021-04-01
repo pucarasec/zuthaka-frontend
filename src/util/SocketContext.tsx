@@ -9,6 +9,7 @@ import React, {
 } from 'react'
 import { useUser } from 'material-crud'
 import Urls from './Urls'
+import { useLogging } from './LoggingContext'
 
 interface ContextProps {
   socket: WebSocket | null
@@ -51,28 +52,40 @@ type OnErrorProps = (e: CloseEvent) => void
 
 export const useSocket = () => {
   const { socket, refresh, id } = useContext(SocketContext)
+  const { logging } = useLogging()
 
   const isConnected = useMemo(() => socket?.readyState === socket?.OPEN, [socket])
   const callSend = useCallback(
-    (data: object) => isConnected && socket?.send(JSON.stringify(data)),
-    [socket, isConnected],
+    (data: object) => {
+      if (isConnected) {
+        const json = JSON.stringify(data)
+        socket?.send(json)
+        if (logging) console.log(json)
+      }
+    },
+    [socket, isConnected, logging],
   )
   const callOnMessage = useCallback(
     (e: OnMessageProps) => {
-      if (socket) socket.onmessage = (ev) => e(ev)
+      if (socket)
+        socket.onmessage = (ev) => {
+          e(ev)
+          if (logging) console.log(ev)
+        }
     },
-    [socket],
+    [socket, logging],
   )
   const callOnError = useCallback(
     (e: OnErrorProps) => {
       if (socket) {
         socket.onclose = (ev) => {
           e(ev)
+          if (logging) console.log(ev)
           if (refresh) refresh()
         }
       }
     },
-    [socket, refresh],
+    [socket, refresh, logging],
   )
 
   return { send: callSend, onMessage: callOnMessage, onError: callOnError, id, isConnected }

@@ -62,7 +62,12 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
                   const sizeString = size?.height
                     ? `height=${size.height},width=${size.width}`
                     : 'height=600,width=800'
-                  window.open(window.location.origin + '/detached_agent', '_blank', sizeString)
+                  window.open(
+                    window.location.origin +
+                      `/detached_agent?${new URLSearchParams(agent as any).toString()}`,
+                    '_blank',
+                    sizeString,
+                  )
                 }}>
                 <FaExternalLinkAlt />
               </IconButton>
@@ -80,7 +85,7 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
               <FileManager />
             </TabPanel>
             <TabPanel value={value} index={2}>
-              <ProcessManager terminalSize={terminalSize} />
+              <ProcessManager terminalSize={terminalSize} detached={detached} />
             </TabPanel>
             <TabPanel value={value} index={3}>
               <PostExploitation />

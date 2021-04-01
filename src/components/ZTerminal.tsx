@@ -38,7 +38,7 @@ export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
             if (type === 'task.created') {
               send({ type: 'shell.execute', command, reference })
             } else if (content) {
-              print(content)
+              if (typeof content === 'string') print(content)
             } else if (error) {
               print(error)
             }

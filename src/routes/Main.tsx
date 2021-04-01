@@ -6,6 +6,7 @@ import Launcher from '../screens/Launcher'
 import Listener from '../screens/Listener'
 import CTwo from '../screens/CTwo'
 import {
+  FaCode,
   FaMoon,
   FaPhoneSquareAlt,
   FaPlaneDeparture,
@@ -22,10 +23,13 @@ import { useUser } from 'material-crud'
 import Login from '../screens/Login'
 import DetailWrapper from '../components/DetailWrapper'
 import ChangePassword from '../screens/ChangePassword'
+import { useLogging } from '../util/LoggingContext'
+import { ReactComponent as Logo } from '../assets/images/logo.svg'
 
 export default () => {
   const { setColor, color } = useColorTheme()
   const { user, setUser } = useUser()
+  const { logging, setLogging } = useLogging()
 
   const routes = createRoutes([
     { route: '/login', component: <Login /> },
@@ -74,6 +78,7 @@ export default () => {
       maintainIcons
       menu={menu}
       routes={routes}
+      menuDrawerIcon={<Logo width={30} height={40} />}
       config={{ title: 'Zuthaka', showUser: !!user }}
       userMenu={userMenu}
       extraIcons={[
@@ -84,6 +89,12 @@ export default () => {
           onClick: () => {
             setColor((color) => (color === 'dark' ? 'light' : 'dark'))
           },
+        },
+        {
+          id: 'logging',
+          icon: <FaCode />,
+          tooltip: `${!logging ? 'Activate' : 'Desactivate'} logging`,
+          onClick: () => setLogging(!logging),
         },
       ]}
     />

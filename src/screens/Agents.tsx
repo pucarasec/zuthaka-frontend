@@ -107,6 +107,7 @@ export default () => {
         </TabList>
         <TabPanel>
           <FullCrud
+            noBorder={false}
             ref={(e) => (crudRef.current = e)}
             itemName="hostname"
             height={height - 200}

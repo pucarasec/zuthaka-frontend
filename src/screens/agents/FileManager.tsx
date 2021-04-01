@@ -27,7 +27,7 @@ export default memo(() => {
   const snacksRef = useRef<SnackbarKey[]>([])
   const listRef = useRef(false)
 
-  const fileRef = useRef<string | null>(null)
+  const fileRef = useRef<{ id: number; transition_file: string } | null>(null)
   const downloadRef = useRef('')
 
   const [openDialog, setOpenDialog] = useState(false)
@@ -68,7 +68,7 @@ export default memo(() => {
   const handleSocket = useCallback(
     (typeAction: 'list' | 'upload' | 'download', data?: any) => {
       onMessage(async (e) => {
-        const { type, reference, content } = JSON.parse(e.data || '{}')
+        const { type, reference, content, error } = JSON.parse(e.data || '{}')
         if (type === 'task.created') {
           switch (typeAction) {
             case 'list':
@@ -86,87 +86,81 @@ export default memo(() => {
               const formData = new FormData()
               formData.append('file', data)
               formData.append('task-reference', reference)
-              const { response } = await callWs<{ transition_file: string }>({
+              const { response } = await callWs<{ id: number; transition_file: string }>({
                 method: 'POST',
                 url: Urls.agents_upload(id),
                 headers: { ...headers, 'content-type': 'multipart/form-data' },
                 data: formData,
               })
               if (response) {
-                console.log(response)
-                fileRef.current = response?.transition_file
+                fileRef.current = response
                 send({ type: 'file_manager.upload', target_directory: actualFolder, reference })
               }
               break
             default:
               break
           }
+        } else if (error) {
+          showNotification(error)
         } else if (content) {
-          if (content.error) {
-            showNotification(content.error)
-          } else {
-            switch (type) {
-              case 'file_manager.list_directory.result':
-                const { files, directories } = content
-                setFiles([
-                  ...files.map(({ name, size, date, additional_info }: any) => ({
-                    id: name,
-                    name,
-                    size: parseInt(size) || undefined,
-                    modDate: date,
-                    additional_info,
-                    draggable: false,
-                  })),
-                  ...directories.map(({ name, date }: any) => ({
-                    id: name,
-                    name,
-                    isDir: true,
-                    modDate: date,
-                    droppable: false,
-                    selectable: false,
-                  })),
-                ])
-                break
-              case 'file_manager.download.result':
-                const { response } = await callWs<Blob>({
-                  url: Urls.agents_download(id),
-                  responseType: 'blob',
-                  params: { 'task-reference': reference },
-                  headers,
-                })
-                if (response) {
-                  const url = window.URL.createObjectURL(new Blob([response]))
-                  const link = document.createElement('a')
-                  link.href = url
-                  link.setAttribute('download', downloadRef.current)
-                  document.body.appendChild(link)
-                  link.click()
-                  link.remove()
-                }
-                break
-              case 'file_manager.upload.result':
-                showNotification(content)
-                const newFile = fileRef.current?.replace('/', '')
-                // setFiles((acc) => [
-                //   ...acc,
-                //   {
-                //     id: newFile,
-                //     name: newFile,
-                //     size: parseInt(newFile.) || undefined,
-                //     modDate: date,
-                //     additional_info,
-                //     draggable: false,
-                //   },
-                // ])
-                break
-              default:
-                break
-            }
+          switch (type) {
+            case 'file_manager.list_directory.result':
+              const { files, directories } = content
+              setFiles([
+                ...files.map(({ name, size, date, additional_info }: any) => ({
+                  id: name,
+                  name,
+                  size: parseInt(size) || undefined,
+                  modDate: date,
+                  additional_info,
+                  draggable: false,
+                })),
+                ...directories.map(({ name, date }: any) => ({
+                  id: name,
+                  name,
+                  isDir: true,
+                  modDate: date,
+                  droppable: false,
+                  selectable: false,
+                })),
+              ])
+              break
+            case 'file_manager.download.result':
+              const { response } = await callWs<Blob>({
+                url: Urls.agents_download(id),
+                responseType: 'blob',
+                params: { 'task-reference': reference },
+                headers,
+              })
+              if (response) {
+                const url = window.URL.createObjectURL(new Blob([response]))
+                const link = document.createElement('a')
+                link.href = url
+                link.setAttribute('download', downloadRef.current)
+                document.body.appendChild(link)
+                link.click()
+                link.remove()
+              }
+              break
+            case 'file_manager.upload.result':
+              showNotification(content)
+              const newFile = fileRef.current
+              setFiles((acc) => [
+                ...acc,
+                {
+                  id: newFile?.id,
+                  name: newFile?.transition_file.replace('/', ''),
+                  draggable: false,
+                },
+              ])
+              break
+            default:
+              break
           }
         }
       })
       onError((e) => {
-        showNotification('Error ocurred')
+        showNotification(e.reason)
       })
       send({ type: 'create.task' })
     },

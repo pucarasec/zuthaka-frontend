@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSocket } from '../../util/SocketContext'
 import { useSnackbar } from 'notistack'
 import CustomTable from '../../components/Table/CustomTable'
-import { createColumns, TableTypes } from 'material-crud'
+import { createColumns, TableTypes, useWindowSize } from 'material-crud'
 import { ClickRow } from '../../components/Table/CustomRow'
 import MenuIcon, { MenuIconOptionsProps } from '../../components/MenuIcon'
 import { FaInfoCircle, FaSyringe, FaTimesCircle } from 'react-icons/fa'
@@ -20,6 +20,7 @@ interface DataProps {
 
 interface Props {
   terminalSize: TerminalSize
+  detached?: boolean
 }
 
 const initialStateMenu = {
@@ -27,9 +28,10 @@ const initialStateMenu = {
   mouseY: null,
 }
 
-const ProcessManager = ({ terminalSize }: Props) => {
+const ProcessManager = ({ terminalSize, detached }: Props) => {
   const { enqueueSnackbar } = useSnackbar()
   const { setLoading } = useNavigator()
+  const { height } = useWindowSize()
 
   const [openDialog, setOpenDialog] = useState(false)
   const handleDialog = useCallback((value: boolean) => setOpenDialog(value), [])
@@ -135,7 +137,11 @@ const ProcessManager = ({ terminalSize }: Props) => {
         data={data}
         columns={columns}
         onRightClickRow={handleRightClickRow}
-        tableHeight={terminalSize === 'minimizezd' ? 400 : 250}
+        tableHeight={
+          terminalSize === 'minimizezd'
+            ? height - (detached ? 141 : 257)
+            : height - (detached ? 276 : 407)
+        }
       />
       <MenuIcon
         callCloseMenu={callCloseMenu}

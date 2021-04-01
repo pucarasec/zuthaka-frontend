@@ -24,7 +24,7 @@ export default () => {
       setUser(response)
       history.replace(from)
     }
-  }, [setUser, history, response, from, user])
+  }, [setUser, history, response, from, state, user])
 
   const fields = useMemo(
     () =>

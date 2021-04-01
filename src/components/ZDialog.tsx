@@ -7,7 +7,6 @@ import {
   IconButton,
   makeStyles,
   Slide,
-  Typography,
 } from '@material-ui/core'
 import { TransitionProps } from '@material-ui/core/transitions'
 import { FaTimes } from 'react-icons/fa'

@@ -7,7 +7,7 @@ import useAxios from '../util/useAxios'
 
 export default () => {
   useNavigatorConfig({ title: 'User config', noSearch: true })
-  const [_, loading, call, __, status, error] = useAxios()
+  const [, loading, call, , status, error] = useAxios()
   const history = useHistory()
 
   const fields = createFields([

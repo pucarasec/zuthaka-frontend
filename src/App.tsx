@@ -6,6 +6,7 @@ import { getTheme, useColorTheme } from './util/Theme'
 import { CrudProvider, enUS } from 'material-crud'
 import Storage from './util/Storage'
 import { LoginResponse } from './screens/Login'
+import { LoggingProvider } from './util/LoggingContext'
 
 export default () => {
   const [user, setUser] = useState(Storage.getItem<LoginResponse>('User'))
@@ -23,7 +24,9 @@ export default () => {
             if (newUser) Storage.saveItem('User', newUser)
             else Storage.removeItem('User')
           }}>
-          <Main />
+          <LoggingProvider>
+            <Main />
+          </LoggingProvider>
         </CrudProvider>
       </SnackbarProvider>
     </ThemeProvider>

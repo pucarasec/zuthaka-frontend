@@ -20,6 +20,7 @@ interface DataProps {
 
 interface Props {
   terminalSize: TerminalSize
+  detached?: boolean
 }
 
 const initialStateMenu = {
@@ -27,7 +28,7 @@ const initialStateMenu = {
   mouseY: null,
 }
 
-const ProcessManager = ({ terminalSize }: Props) => {
+const ProcessManager = ({ terminalSize, detached }: Props) => {
   const { enqueueSnackbar } = useSnackbar()
   const { setLoading } = useNavigator()
   const { height } = useWindowSize()
@@ -136,7 +137,11 @@ const ProcessManager = ({ terminalSize }: Props) => {
         data={data}
         columns={columns}
         onRightClickRow={handleRightClickRow}
-        tableHeight={terminalSize === 'minimizezd' ? height - 257 : height - 407}
+        tableHeight={
+          terminalSize === 'minimizezd'
+            ? height - (detached ? 141 : 257)
+            : height - (detached ? 276 : 407)
+        }
       />
       <MenuIcon
         callCloseMenu={callCloseMenu}

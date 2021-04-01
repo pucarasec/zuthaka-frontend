@@ -24,6 +24,7 @@ import Login from '../screens/Login'
 import DetailWrapper from '../components/DetailWrapper'
 import ChangePassword from '../screens/ChangePassword'
 import { useLogging } from '../util/LoggingContext'
+import { ReactComponent as Logo } from '../assets/images/logo.svg'
 
 export default () => {
   const { setColor, color } = useColorTheme()
@@ -77,6 +78,7 @@ export default () => {
       maintainIcons
       menu={menu}
       routes={routes}
+      menuDrawerIcon={<Logo width={30} height={40} />}
       config={{ title: 'Zuthaka', showUser: !!user }}
       userMenu={userMenu}
       extraIcons={[

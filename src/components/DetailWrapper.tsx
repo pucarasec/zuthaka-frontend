@@ -1,4 +1,5 @@
 import React from 'react'
+import { useLocation } from 'react-router-dom'
 import DetailAgent from '../screens/agents/DetailAgent'
 import { SocketProvider } from '../util/SocketContext'
 
@@ -18,9 +19,12 @@ export interface DetailWrapperProps extends Partial<AgentProps> {
 }
 
 export default ({ detached, ...agent }: DetailWrapperProps) => {
+  const { search } = useLocation()
+  const agentDetached = Object.fromEntries(new URLSearchParams(search))
+
   return (
-    <SocketProvider id={agent.id!!}>
-      <DetailAgent detached={detached} {...agent} />
+    <SocketProvider id={agent.id || parseInt(agentDetached.id || '-1')}>
+      <DetailAgent detached={detached} {...agent} {...agentDetached} />
     </SocketProvider>
   )
 }

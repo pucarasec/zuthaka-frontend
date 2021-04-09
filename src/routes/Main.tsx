@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { createMenu, createRoutes, createUserMenu, Navigator } from 'material-navigator'
 import Storage from '../util/Storage'
 import Home from '../screens/Home'
@@ -25,11 +25,14 @@ import DetailWrapper from '../components/DetailWrapper'
 import ChangePassword from '../screens/ChangePassword'
 import { useLogging } from '../util/LoggingContext'
 import { ReactComponent as Logo } from '../assets/images/logo.svg'
+import LogoExtendido from '../assets/images/logoExtendido.png'
+import { makeStyles } from '@material-ui/core'
 
 export default () => {
   const { setColor, color } = useColorTheme()
   const { user, setUser } = useUser()
   const { logging, setLogging } = useLogging()
+  const classes = useClasses()
 
   const routes = createRoutes([
     { route: '/login', component: <Login /> },
@@ -78,9 +81,12 @@ export default () => {
       maintainIcons
       menu={menu}
       routes={routes}
-      menuDrawerIcon={<Logo width={30} height={40} />}
+      menuDrawerIcon={<Logo height={35} />}
       config={{ title: 'Zuthaka', showUser: !!user }}
       userMenu={userMenu}
+      menuDrawerHeader={
+        <img src={LogoExtendido} alt="logo extendido" height={35} className={classes.logo} />
+      }
       extraIcons={[
         {
           id: 'sun',
@@ -100,3 +106,9 @@ export default () => {
     />
   )
 }
+
+const useClasses = makeStyles((theme) => ({
+  logo: {
+    marginLeft: theme.spacing(2),
+  },
+}))

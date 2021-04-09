@@ -4,12 +4,15 @@ import Urls from '../util/Urls'
 import { useHistory, useLocation } from 'react-router-dom'
 import { useNavigatorConfig } from 'material-navigator'
 import useAxios from '../util/useAxios'
+import LogoExtendido from '../assets/images/logoExtendido.png'
+import { makeStyles } from '@material-ui/core'
 
 export interface LoginResponse {
   token: string | null
 }
 
 export default () => {
+  const classes = useClasses()
   const { setUser, user } = useUser()
   useNavigatorConfig({ title: 'Sign in', noSearch: true, showUser: !!user, noDrawerMenu: !user })
   const history = useHistory()
@@ -36,11 +39,11 @@ export default () => {
   )
 
   return (
-    <div style={{ width: '80%', margin: 'auto' }}>
-      <CenteredCard
-        loading={loading}
-        title="Welcome to Zuthaka!"
-        subtitle="Please authenticate to continue">
+    <div className={classes.root}>
+      <CenteredCard loading={loading}>
+        <div className={classes.logo}>
+          <img src={LogoExtendido} alt="logo extendido" height={50} />
+        </div>
         <Form
           loading={loading}
           onSubmit={(data) => callLogin({ url: Urls.login, method: 'POST', data })}
@@ -51,3 +54,15 @@ export default () => {
     </div>
   )
 }
+
+const useClasses = makeStyles((theme) => ({
+  root: {
+    width: '60%',
+    margin: 'auto',
+  },
+  logo: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: theme.spacing(2),
+  },
+}))

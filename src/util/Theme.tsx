@@ -26,7 +26,7 @@ export const useColorTheme = () => {
 export const getTheme = (color: ThemeOptions) => {
   return createMuiTheme({
     palette: {
-      primary: { main: color === 'dark' ? grey[700] : blue[500] },
+	primary: { main: color === 'dark' ? '#f23054':'#A62957'  },
       type: color,
     },
     typography: {

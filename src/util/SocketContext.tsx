@@ -34,7 +34,6 @@ export const SocketProvider = memo(({ children, id }: ProviderProps) => {
   const [attemps, setAttemps] = useState(0)
 
   const refresh = useCallback(() => setAttemps((acc) => acc + 1), [])
-
   const socket = useMemo(() => {
     console.log(attemps)
     const socket = new WebSocket(
@@ -56,8 +55,8 @@ export const useSocket = () => {
 
   const isConnected = useMemo(() => socket?.readyState === socket?.OPEN, [socket])
   const callSend = useCallback(
-    (data: object) => {
-      if (isConnected) {
+    (data: object, terminal?: boolean) => {
+      if (isConnected || terminal) {
         const json = JSON.stringify(data)
         socket?.send(json)
         if (logging) console.log(json)

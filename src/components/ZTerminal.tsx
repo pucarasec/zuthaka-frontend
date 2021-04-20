@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { IconButton, makeStyles } from '@material-ui/core'
 import { FaWindowMinimize, FaWindowRestore, FaWindowMaximize } from 'react-icons/fa'
 import Terminal from 'terminal-in-react'
@@ -19,6 +19,26 @@ export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
 
   const { send, onMessage, onError } = useSocket()
 
+  const handleSocket = useCallback(
+    (command: string, print: (message: string) => void) => {
+      onMessage((e) => {
+        const { type, reference, content, error } = JSON.parse(e.data || '{}')
+        if (type === 'task.created') {
+          send({ type: 'shell.execute', command, reference }, true)
+        } else if (content) {
+          if (typeof content === 'string') print(content)
+        } else if (error) {
+          print(error)
+        }
+      })
+      onError((e) => {
+        print('Command not found')
+      })
+      send({ type: 'create.task' }, true)
+    },
+    [onMessage, onError, send],
+  )
+
   return (
     <div className={classes.terminal}>
       <Terminal
@@ -33,20 +53,7 @@ export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
         msg={hostname}
         commandPassThrough={(cmd, print: (message: string) => void) => {
           const [command] = cmd
-          onMessage((e) => {
-            const { type, reference, content, error } = JSON.parse(e.data || '{}')
-            if (type === 'task.created') {
-              send({ type: 'shell.execute', command, reference })
-            } else if (content) {
-              if (typeof content === 'string') print(content)
-            } else if (error) {
-              print(error)
-            }
-          })
-          onError((e) => {
-            print('Command not found')
-          })
-          send({ type: 'create.task' })
+          handleSocket(command, print)
         }}
       />
       <div className={classes.terminalBtns}>

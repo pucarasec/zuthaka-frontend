@@ -35,7 +35,7 @@ export const renderType = (type?: string): RenderType => {
 
 export default forwardRef<CrudRefProps, FullCrudProps>((props, ref) => {
   const { name } = props
-  useNavigatorConfig({ title: name })
+  useNavigatorConfig({ title: name, noSearch: true})
   const { enqueueSnackbar } = useSnackbar()
   const { height } = useWindowSize()
 
@@ -66,17 +66,17 @@ export default forwardRef<CrudRefProps, FullCrudProps>((props, ref) => {
         const charGenero = genero === 'F' ? 'a' : 'o'
         switch (what) {
           case 'new':
-            enqueueSnackbar(`${name} agregad${charGenero}`, {
+            enqueueSnackbar(`${name} added`, {
               variant: 'success',
             })
             break
           case 'update':
-            enqueueSnackbar(`${name} editad${charGenero}`, {
+            enqueueSnackbar(`${name} edited`, {
               variant: 'success',
             })
             break
           case 'delete':
-            enqueueSnackbar(`${name} borrad${charGenero}`, {
+            enqueueSnackbar(`${name} deleted`, {
               variant: 'info',
             })
             break

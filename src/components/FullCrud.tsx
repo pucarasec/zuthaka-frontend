@@ -23,19 +23,27 @@ export interface WSResponse<T = any> {
 }
 
 type FullCrudProps = Omit<CrudProps, 'response'>
-type RenderType = FormTypes.Input | FormTypes.Number | FormTypes.OnlyTitle | FormTypes.Secure
+export type RenderType =
+  | FormTypes.Input
+  | FormTypes.Number
+  | FormTypes.OnlyTitle
+  | FormTypes.Secure
+  | FormTypes.Switch
+  | FormTypes.Multiple
 
 export const renderType = (type?: string): RenderType => {
   if (type === 'string') return FormTypes.Input
   else if (type === 'protected-string') return FormTypes.Secure
   else if (type === 'integer') return FormTypes.Number
+  else if (type === 'bool') return FormTypes.Switch
+  else if (type === 'list-string' || type === 'list-integer') return FormTypes.Multiple
 
   return FormTypes.OnlyTitle
 }
 
 export default forwardRef<CrudRefProps, FullCrudProps>((props, ref) => {
   const { name } = props
-  useNavigatorConfig({ title: name, noSearch: true})
+  useNavigatorConfig({ title: name, noSearch: true })
   const { enqueueSnackbar } = useSnackbar()
   const { height } = useWindowSize()
 
@@ -62,8 +70,7 @@ export default forwardRef<CrudRefProps, FullCrudProps>((props, ref) => {
       itemId="id"
       noFilterOptions
       onError={mostrarError(enqueueSnackbar)}
-      onFinished={(what, genero) => {
-        const charGenero = genero === 'F' ? 'a' : 'o'
+      onFinished={(what) => {
         switch (what) {
           case 'new':
             enqueueSnackbar(`${name} added`, {

@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import {
+  IconButton,
   makeStyles,
   Paper,
   Table,
@@ -8,13 +9,40 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Tooltip,
 } from '@material-ui/core'
+import { FaEye, FaEyeSlash } from 'react-icons/fa'
+import { RenderType } from './FullCrud'
+import { FormTypes } from 'material-crud'
 
 type Align = 'left' | 'right' | 'center'
 
 interface Props {
   columns: { title: string; align?: Align }[]
-  rows: { name: string; align?: Align }[]
+  rows: { name: string; align?: Align; type?: RenderType }[]
+}
+
+interface ProtectedCellProps {
+  value: string
+}
+
+const ProtectedCell = ({ value }: ProtectedCellProps) => {
+  const [show, setShow] = useState(false)
+
+  const renderHide = useCallback(() => [...value].map(() => '*'), [value])
+
+  return (
+    <div style={{ display: 'flex' }}>
+      <span style={{ flex: 1 }}>{show ? value : renderHide()}</span>
+      <Tooltip title={show ? 'Hide' : 'Show'}>
+        <div>
+          <IconButton size="small" onClick={() => setShow(!show)}>
+            {!show ? <FaEye /> : <FaEyeSlash />}
+          </IconButton>
+        </div>
+      </Tooltip>
+    </div>
+  )
 }
 
 const DenseTable = ({ columns, rows }: Props) => {
@@ -34,9 +62,9 @@ const DenseTable = ({ columns, rows }: Props) => {
         </TableHead>
         <TableBody>
           <TableRow>
-            {rows.map(({ name, align }) => (
+            {rows.map(({ name, align, type }) => (
               <TableCell key={name} component="th" scope="row" align={align}>
-                {name}
+                {type === FormTypes.Secure ? <ProtectedCell value={name} /> : name}
               </TableCell>
             ))}
           </TableRow>

@@ -7,6 +7,7 @@ import { CrudProvider, enUS } from 'material-crud'
 import Storage from './util/Storage'
 import { LoginResponse } from './screens/Login'
 import { LoggingProvider } from './util/LoggingContext'
+import { ResponsiveProvider } from './util/ResponsiveContext'
 
 export default () => {
   const [user, setUser] = useState(Storage.getItem<LoginResponse>('User'))
@@ -25,7 +26,9 @@ export default () => {
             else Storage.removeItem('User')
           }}>
           <LoggingProvider>
-            <Main />
+            <ResponsiveProvider>
+              <Main />
+            </ResponsiveProvider>
           </LoggingProvider>
         </CrudProvider>
       </SnackbarProvider>

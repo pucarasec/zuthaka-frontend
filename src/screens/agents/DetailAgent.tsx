@@ -1,6 +1,6 @@
 import { AppBar, makeStyles, Tab, Tabs, IconButton } from '@material-ui/core'
 import { useNavigatorConfig } from 'material-navigator'
-import React, { useCallback, useLayoutEffect, useState } from 'react'
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import SwipeableViews from 'react-swipeable-views'
 import TabPanel from '../../components/TabPanel'
 import { useWindowSize } from 'material-crud'
@@ -8,12 +8,13 @@ import Manage from './Manage'
 import FileManager from './FileManager'
 import ProcessManager from './ProcessManager'
 import PostExploitation from './PostExploitation'
-import { FaExternalLinkAlt } from 'react-icons/fa'
 import Storage from '../../util/Storage'
-import ZTerminal, { TerminalSize } from '../../components/ZTerminal'
+import ZTerminal, { TerminalSize, RefType } from '../../components/ZTerminal'
 import { DetailWrapperProps } from '../../components/DetailWrapper'
 
 export default ({ detached, ...agent }: DetailWrapperProps) => {
+  const terminalRef = useRef<RefType | null>(null)
+
   useNavigatorConfig(
     detached ? { onlyContent: true } : { title: 'Agents', noPadding: true, goBack: true },
   )
@@ -69,7 +70,7 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
                     sizeString,
                   )
                 }}>
-                <FaExternalLinkAlt />
+                3
               </IconButton>
             )}
           </AppBar>
@@ -88,12 +89,13 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
               <ProcessManager terminalSize={terminalSize} detached={detached} />
             </TabPanel>
             <TabPanel value={value} index={3}>
-              <PostExploitation />
+              <PostExploitation terminal={terminalRef.current} />
             </TabPanel>
           </SwipeableViews>
         </React.Fragment>
       )}
       <ZTerminal
+        ref={(e) => (terminalRef.current = e)}
         terminalSize={terminalSize}
         onTerminalResize={(newSize) => setTerminalSize(newSize)}
         {...agent}

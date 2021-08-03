@@ -35,13 +35,12 @@ export const SocketProvider = memo(({ children, id }: ProviderProps) => {
 
   const refresh = useCallback(() => setAttemps((acc) => acc + 1), [])
   const socket = useMemo(() => {
-    console.log(attemps)
     const socket = new WebSocket(
       `${Urls.baseSocket}/agents/${id}/interact/?access_token=${user.token}`,
     )
 
     return socket
-  }, [user.token, id, attemps])
+  }, [user.token, id])
 
   return <SocketContext.Provider value={{ socket, refresh, id }}>{children}</SocketContext.Provider>
 })

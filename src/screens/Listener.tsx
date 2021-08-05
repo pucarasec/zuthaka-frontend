@@ -202,7 +202,7 @@ export default () => {
             return {
               id: `${id}-${name}`,
               type: fieldType,
-              title: fieldType === FormTypes.Multiple ? description : name,
+              title: name,
               configuration:
                 fieldType === FormTypes.Multiple
                   ? [{ id: 'options', type: FormTypes.Input, title: name }]

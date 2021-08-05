@@ -79,7 +79,7 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
             index={value}
             onChangeIndex={handleChange}>
             <TabPanel value={value} index={0}>
-              <Manage />
+              <Manage {...agent} />
             </TabPanel>
             <TabPanel value={value} index={1}>
               <FileManager />

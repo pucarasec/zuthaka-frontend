@@ -14,7 +14,7 @@ export default () => {
 
   return (
     <ThemeProvider theme={getTheme(color)}>
-      <SnackbarProvider maxSnack={3}>
+      <SnackbarProvider anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }} maxSnack={3}>
         <CrudProvider
           lang={enUS}
           user={user}

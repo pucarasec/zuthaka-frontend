@@ -46,6 +46,7 @@ export default () => {
 
   const handleChange = useCallback(
     (event, rowData: DetailWrapperProps) => {
+      if (!rowData.active) return
       if (lastAgents.length < 3 && !lastAgents.some(({ id }) => id === rowData.id)) {
         callSetAgents(rowData)
         selectAgent(lastAgents.length + 1)
@@ -114,6 +115,13 @@ export default () => {
             columns={columns}
             url={Urls.agents}
             name="Agents"
+            rowStyle={({ active }: DetailWrapperProps) => {
+              if (active) return {}
+              return {
+                cursor: 'not-allowed',
+                backgroundColor: '#fafafa',
+              }
+            }}
             actions={{ edit: false, delete: true }}
             onClickRow={handleChange}
           />

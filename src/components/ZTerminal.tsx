@@ -1,10 +1,13 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback } from 'react'
 import { IconButton, makeStyles } from '@material-ui/core'
 import { FaWindowMinimize, FaWindowRestore, FaWindowMaximize } from 'react-icons/fa'
 import Terminal from 'terminal-in-react'
 import { useSocket } from '../util/SocketContext'
 import { useColorTheme } from '../util/Theme'
 import { DetailWrapperProps } from './DetailWrapper'
+import { useRef } from 'react'
+import { forwardRef } from 'react'
+import { useImperativeHandle } from 'react'
 
 export type TerminalSize = 'minimizezd' | 'normal' | 'maximized'
 
@@ -13,7 +16,9 @@ interface Props extends DetailWrapperProps {
   onTerminalResize: (newSize: TerminalSize) => void
 }
 
-export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
+export type RefType = { writeConsole: (str: string) => void; writeImg: (url: string) => void }
+export default forwardRef<RefType, Props>(({ terminalSize, onTerminalResize, hostname }, ref) => {
+  const terminalRef = useRef<Terminal | null>()
   const { isDarkTheme } = useColorTheme()
   const classes = useClasses({ terminalSize, isDarkTheme })
 
@@ -39,6 +44,63 @@ export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
     [onMessage, onError, send],
   )
 
+  const writeConsole = useCallback(async (str: string) => {
+    terminalRef.current?.setState((act: any) => {
+      const actual = act.instances.find((e: any) => e.index === act.activeTab) || act.instances[0]
+      const { instance } = actual
+      const { summary } = instance.state || {}
+      summary.push(str)
+
+      return { ...act }
+    })
+  }, [])
+
+  const writeImg = useCallback(
+    async (url: string) => {
+      await writeConsole('> sreenshot')
+
+      terminalRef.current?.setState((act: any) => {
+        const actual = act.instances.find((e: any) => e.index === act.activeTab) || act.instances[0]
+        const { instance } = actual
+        const { inputWrapper } = instance
+
+        const div = document.createElement('div')
+        const innerDiv = document.createElement('div')
+        innerDiv.style.width = '200px'
+        innerDiv.style.height = '85px'
+        innerDiv.style.backgroundRepeat = 'no-repeat'
+        innerDiv.style.backgroundImage = `url(${url})`
+        innerDiv.style.backgroundPosition = 'left'
+
+        const link = document.createElement('a')
+        const linkText = document.createTextNode('Download')
+        link.appendChild(linkText)
+        link.title = 'Download'
+        link.href = url
+        link.target = '_blank'
+        link.style.color = '#FFF'
+
+        div.appendChild(innerDiv)
+        div.appendChild(link)
+
+        const wrapperDiv = inputWrapper as HTMLDivElement
+        wrapperDiv.insertAdjacentHTML('beforebegin', div.outerHTML)
+
+        return { ...act }
+      })
+    },
+    [writeConsole],
+  )
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      writeConsole,
+      writeImg,
+    }),
+    [writeConsole, writeImg],
+  )
+
   return (
     <div className={classes.terminal}>
       <Terminal
@@ -50,6 +112,7 @@ export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
         startState="maximised"
         allowTabs={false}
         hideTopBar
+        ref={(e) => (terminalRef.current = e)}
         msg={hostname}
         commandPassThrough={(cmd, print: (message: string) => void) => {
           const [command] = cmd
@@ -78,7 +141,7 @@ export default ({ terminalSize, onTerminalResize, hostname }: Props) => {
       </div>
     </div>
   )
-}
+})
 
 const useClasses = makeStyles((theme) => ({
   terminal: ({ terminalSize }: any) => ({

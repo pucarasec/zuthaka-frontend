@@ -12,6 +12,7 @@ interface AgentProps {
   last_conection: Date
   username: string
   hostname: string
+  active: boolean
 }
 
 export interface DetailWrapperProps extends Partial<AgentProps> {

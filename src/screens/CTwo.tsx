@@ -15,6 +15,7 @@ const CTwo = () => {
   useNavigatorConfig({ title: 'Settings - C2', noPadding: false })
   const { setLoading } = useNavigator()
   const { push } = useHistory()
+
   const [types, loadingTypes] = useAxios<WSResponse<any[]>>({
     onInit: {
       url: Urls.c2_types,
@@ -74,15 +75,27 @@ const CTwo = () => {
             if (!rowData?.options || !rowData?.options.length) return 'Without options'
 
             const reduced = rowData.options.reduce((acc: any, item: any) => {
+              const type = types?.results
+                .find((x) => x.id === rowData.c2_type)
+                ?.options.find((o: any) => o.name === item.name)?.type
+
               if (Object.keys(acc).length === 0)
                 return {
                   columns: [{ title: item.name }],
-                  rows: [{ name: item.value }],
+                  rows: [
+                    {
+                      name: item.value,
+                      type: type ? renderType(type) : undefined,
+                    },
+                  ],
                 }
 
               return {
                 columns: [...acc.columns, { title: item.name }],
-                rows: [...acc.rows, { name: item.value }],
+                rows: [
+                  ...acc.rows,
+                  { name: item.value, type: type ? renderType(type) : undefined },
+                ],
               }
             }, {})
 
@@ -101,65 +114,59 @@ const CTwo = () => {
     [types],
   )
 
-  const fields = useMemo(
-    () =>
-      createFields([
-        {
-          id: 'c2_type',
-          title: 'Type',
-          type: FormTypes.Options,
-          placeholder: 'Select one type',
-          options: types?.results.map(({ id, name }: any) => ({ id, title: name })) || [],
-          validate: Yup.number().required('Required'),
-          readonly: 'edit',
-        },
-        types?.results
-          .reduce((final, { id, options }): FieldProps[] => {
-            const item = options.map(
-              ({ type, name, description, required, example }: any): FieldProps => ({
-                id: `${id}-${name}`,
-                type: renderType(type),
-                title: name,
-                help: description ? (
-                  <React.Fragment>
-                    <Typography color="inherit">{description}</Typography>
-                    {example && <em>Example: {example}</em>}
-                  </React.Fragment>
-                ) : (
-                  ''
-                ),
-                depends: (props) => id === props.c2_type,
-                validate:
-                  required.toLowerCase() === 'true'
-                    ? Yup.string().when('c2_type', {
-                        is: (val) => val === id,
-                        then: Yup.string().required('Required'),
-                        otherwise: Yup.string().notRequired(),
-                      })
-                    : undefined,
-              }),
-            )
-            return [...final, item]
-          }, [])
-          ?.flat(),
-      ]),
-    [types],
-  )
+  const fields = useMemo(() => {
+    let optionsFields = [
+      {
+        id: 'c2_type',
+        title: 'Type',
+        type: FormTypes.Options,
+        placeholder: 'Select one type',
+        options: types?.results.map(({ id, name }: any) => ({ id, title: name })) || [],
+        validate: Yup.number().required('Required'),
+        readonly: 'edit',
+      },
+      types?.results
+        .reduce((final, { id, options }): FieldProps[] => {
+          const item = options?.map(({ type, name, description, required, example }: any): any => {
+            const fieldType = renderType(type)
+            return {
+              id: `${id}-${name}`,
+              type: fieldType,
+              title: name,
+              configuration:
+                fieldType === FormTypes.Multiple
+                  ? [{ id: 'options', type: FormTypes.Input, title: name }]
+                  : undefined,
+              help: description ? (
+                <React.Fragment>
+                  <Typography color="inherit">{description}</Typography>
+                  {example && <em>Example: {example}</em>}
+                </React.Fragment>
+              ) : (
+                ''
+              ),
+              depends: (props: any) => id === props.c2_type,
+              validate:
+                required.toLowerCase() === 'true'
+                  ? Yup.string().when('c2_type', {
+                      is: (val) => val === id,
+                      then: Yup.string().required('Required'),
+                      otherwise: Yup.string().notRequired(),
+                    })
+                  : undefined,
+            }
+          })
+          return [...final, item]
+        }, [])
+        ?.flat(),
+    ]
+
+    return createFields(optionsFields.flat())
+  }, [types])
 
   const filters = useMemo(
     () =>
       createFields([
-        // {
-        //   id: 'c2_id',
-        //   type: FormTypes.Options,
-        //   options:
-        //     types?.results.map(({ name, id }: any) => ({
-        //       id,
-        //       title: `${name} (${id})`,
-        //     })) || [],
-        //   title: 'C2',
-        //   placeholder: 'Select one C2',
-        // },
         { id: 'created_since', type: FormTypes.Date, title: 'Created Since' },
         { id: 'created_until', type: FormTypes.Date, title: 'Created Until' },
       ]),
@@ -191,6 +198,9 @@ const CTwo = () => {
               return final
             }
             const item = { name: actual.split('-')[1], value: rowData[actual] }
+            if (item.value && Array.isArray(item.value))
+              item.value = item.value.map((item) => item[Object.keys(item)[0]])
+
             return [...final, item]
           }, [])
           return { ...rowData, options }

@@ -97,15 +97,22 @@ export default () => {
             if (!rowData?.options || !rowData?.options.length) return 'Without options'
 
             const reduced = rowData.options.reduce((acc: any, item: any) => {
+              const type = types?.results
+                .find((x) => x.id === rowData.launcher_type)
+                ?.options.find((o: any) => o.name === item.name)?.type
+
               if (Object.keys(acc).length === 0)
                 return {
                   columns: [{ title: item.name }],
-                  rows: [{ name: item.value }],
+                  rows: [{ name: item.value, type: type ? renderType(type) : undefined }],
                 }
 
               return {
                 columns: [...acc.columns, { title: item.name }],
-                rows: [...acc.rows, { name: item.value }],
+                rows: [
+                  ...acc.rows,
+                  { name: item.value, type: type ? renderType(type) : undefined },
+                ],
               }
             }, {})
 
@@ -163,60 +170,65 @@ export default () => {
     [listenersTypes, types],
   )
 
-  const fields = useMemo(
-    () =>
-      createFields([
-        {
-          id: 'listener_id',
-          title: 'Listener',
-          type: FormTypes.Options,
-          placeholder: 'Select one listener',
-          options: listenersTypes?.results.map(({ name, id }: any) => ({
-            id,
-            title: `${name} (${id})`,
-          })),
-          validate: Yup.number().required('Required'),
-        },
-        {
-          id: 'launcher_type',
-          title: 'Type',
-          type: FormTypes.Options,
-          placeholder: 'Select one type',
-          options: types?.results?.map(({ name, id }: any) => ({ id, title: name })) || [],
-          validate: Yup.number().required('Required'),
-        },
-        types?.results
-          .reduce((final, { id, options }): FieldProps[] => {
-            const item = options.map(
-              ({ type, name, description, required, example }: any): FieldProps => ({
-                id: `${id}-${name}`,
-                type: renderType(type),
-                title: name,
-                help: description ? (
-                  <React.Fragment>
-                    <Typography color="inherit">{description}</Typography>
-                    {example && <em>Example: {example}</em>}
-                  </React.Fragment>
-                ) : (
-                  ''
-                ),
-                depends: (props) => id === props.launcher_type,
-                validate:
-                  required.toLowerCase() === 'true'
-                    ? Yup.string().when('launcher_type', {
-                        is: (val) => val === id,
-                        then: Yup.string().required('Required'),
-                        otherwise: Yup.string().notRequired(),
-                      })
-                    : undefined,
-              }),
-            )
-            return [...final, item]
-          }, [])
-          ?.flat(),
-      ]),
-    [listenersTypes, types],
-  )
+  const fields = useMemo(() => {
+    let optionsFields = [
+      {
+        id: 'listener_id',
+        title: 'Listener',
+        type: FormTypes.Options,
+        placeholder: 'Select one listener',
+        options: listenersTypes?.results.map(({ name, id }: any) => ({
+          id,
+          title: `${name} (${id})`,
+        })),
+        validate: Yup.number().required('Required'),
+      },
+      {
+        id: 'launcher_type',
+        title: 'Type',
+        type: FormTypes.Options,
+        placeholder: 'Select one type',
+        options: types?.results?.map(({ name, id }: any) => ({ id, title: name })) || [],
+        validate: Yup.number().required('Required'),
+      },
+      types?.results
+        .reduce((final, { id, options }): FieldProps[] => {
+          const item = options?.map(({ type, name, description, required, example }: any): any => {
+            const fieldType = renderType(type)
+            return {
+              id: `${id}-${name}`,
+              type: fieldType,
+              title: name,
+              configuration:
+                fieldType === FormTypes.Multiple
+                  ? [{ id: 'options', type: FormTypes.Input, title: name }]
+                  : undefined,
+              help: description ? (
+                <React.Fragment>
+                  <Typography color="inherit">{description}</Typography>
+                  {example && <em>Example: {example}</em>}
+                </React.Fragment>
+              ) : (
+                ''
+              ),
+              depends: (props: any) => id === props.launcher_type,
+              validate:
+                required.toLowerCase() === 'true'
+                  ? Yup.string().when('launcher_type', {
+                      is: (val) => val === id,
+                      then: Yup.string().required('Required'),
+                      otherwise: Yup.string().notRequired(),
+                    })
+                  : undefined,
+            }
+          })
+          return [...final, item]
+        }, [])
+        ?.flat(),
+    ]
+
+    return createFields(optionsFields.flat())
+  }, [listenersTypes, types])
 
   return (
     <FullCrud
@@ -267,6 +279,9 @@ export default () => {
               return final
             }
             const item = { name: actual.split('-')[1], value: rowData[actual] }
+            if (item.value && Array.isArray(item.value))
+              item.value = item.value.map((item) => item[Object.keys(item)[0]])
+
             return [...final, item]
           }, [])
           return { ...rowData, options }

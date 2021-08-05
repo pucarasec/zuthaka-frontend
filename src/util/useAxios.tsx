@@ -32,7 +32,7 @@ export const mostrarError = (enqueueSnackbar: Enqueue) => (error: Error) => {
     message = 'Error ocurred' // (error as string) || 'Error ocurred'
   }
 
-  enqueueSnackbar(message, { variant: 'error' })
+  enqueueSnackbar(typeof message === 'string' ? message : 'Error ocurred', { variant: 'error' })
 }
 
 export default <T extends any>(props?: UseAxiosProps): ResponseProps<T> => {

@@ -10,6 +10,7 @@ interface AgentProps {
   creation_date: Date
   first_conection: Date
   last_conection: Date
+  shell_type: string
   username: string
   hostname: string
   active: boolean

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigator, useNavigatorConfig } from 'material-navigator'
-import { createColumns, CrudRefProps, useWindowSize } from 'material-crud'
+import { createColumns, CrudRefProps, TableTypes, useWindowSize } from 'material-crud'
 import FullCrud, { WSResponse } from '../components/FullCrud'
 import Urls from '../util/Urls'
 import useAxios from '../util/useAxios'
@@ -93,6 +93,7 @@ export default () => {
         },
         { id: 'username', title: 'Username', width: 2, align: 'center' },
         { id: 'hostname', title: 'Hostname', width: 3, align: 'center' },
+        { id: 'active', title: 'Active', width: 1.5, align: 'center', type: TableTypes.Switch },
       ]),
     [c2Types, listenersTypes],
   )
@@ -102,8 +103,10 @@ export default () => {
       <Tabs selectedIndex={value} onSelect={selectAgent}>
         <TabList>
           <Tab>Agents</Tab>
-          {lastAgents.map(({ hostname, id }: DetailWrapperProps) => (
-            <Tab key={id}>{hostname}</Tab>
+          {lastAgents.map(({ hostname, id, active }: DetailWrapperProps) => (
+            <Tab disabled={!active} key={id}>
+              {hostname}
+            </Tab>
           ))}
         </TabList>
         <TabPanel>
@@ -118,6 +121,7 @@ export default () => {
             rowStyle={({ active }: DetailWrapperProps) => {
               if (active) return {}
               return {
+                pointerEvents: 'none',
                 cursor: 'not-allowed',
                 backgroundColor: '#fafafa',
               }

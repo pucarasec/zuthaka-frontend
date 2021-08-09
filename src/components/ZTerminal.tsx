@@ -8,6 +8,7 @@ import { DetailWrapperProps } from './DetailWrapper'
 import { useRef } from 'react'
 import { forwardRef } from 'react'
 import { useImperativeHandle } from 'react'
+import FileImg from '../assets/images/document.png'
 
 export type TerminalSize = 'minimizezd' | 'normal' | 'maximized'
 
@@ -16,7 +17,10 @@ interface Props extends DetailWrapperProps {
   onTerminalResize: (newSize: TerminalSize) => void
 }
 
-export type RefType = { writeConsole: (str: string) => void; writeImg: (url: string) => void }
+export type RefType = {
+  writeConsole: (str: string) => void
+  writeImg: (url: string, ext?: string) => void
+}
 export default forwardRef<RefType, Props>(({ terminalSize, onTerminalResize, hostname }, ref) => {
   const terminalRef = useRef<Terminal | null>()
   const { isDarkTheme } = useColorTheme()
@@ -56,7 +60,8 @@ export default forwardRef<RefType, Props>(({ terminalSize, onTerminalResize, hos
   }, [])
 
   const writeImg = useCallback(
-    async (url: string) => {
+    async (url: string, ext?: string) => {
+      const isImage = ext === 'jpg' || ext === 'png' || ext === 'jpeg'
       await writeConsole('> sreenshot')
 
       terminalRef.current?.setState((act: any) => {
@@ -66,11 +71,12 @@ export default forwardRef<RefType, Props>(({ terminalSize, onTerminalResize, hos
 
         const div = document.createElement('div')
         const innerDiv = document.createElement('div')
-        innerDiv.style.width = '200px'
+        innerDiv.style.width = '85px'
         innerDiv.style.height = '85px'
         innerDiv.style.backgroundRepeat = 'no-repeat'
-        innerDiv.style.backgroundImage = `url(${url})`
+        innerDiv.style.backgroundImage = `url(${isImage ? url : FileImg})`
         innerDiv.style.backgroundPosition = 'left'
+        innerDiv.style.backgroundSize = 'cover'
 
         const link = document.createElement('a')
         const linkText = document.createTextNode('Download')

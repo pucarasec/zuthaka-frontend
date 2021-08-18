@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { createMenu, createRoutes, createUserMenu, Navigator } from 'material-navigator'
 import Storage from '../util/Storage'
 import Home from '../screens/Home'

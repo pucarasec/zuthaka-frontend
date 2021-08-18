@@ -98,6 +98,10 @@ export default () => {
     [c2Types, listenersTypes],
   )
 
+  useEffect(() => {
+    if (c2Types && listenersTypes) crudRef.current?.refresh()
+  }, [c2Types, listenersTypes])
+
   return (
     <div className={classes.root}>
       <Tabs selectedIndex={value} onSelect={selectAgent}>

@@ -11,6 +11,7 @@ import PostExploitation from './PostExploitation'
 import Storage from '../../util/Storage'
 import ZTerminal, { TerminalSize, RefType } from '../../components/ZTerminal'
 import { DetailWrapperProps } from '../../components/DetailWrapper'
+import { FaExternalLinkAlt } from 'react-icons/fa'
 
 export default ({ detached, ...agent }: DetailWrapperProps) => {
   const terminalRef = useRef<RefType | null>(null)
@@ -70,7 +71,7 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
                     sizeString,
                   )
                 }}>
-                3
+                <FaExternalLinkAlt />
               </IconButton>
             )}
           </AppBar>

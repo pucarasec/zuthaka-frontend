@@ -9,6 +9,8 @@ import { useRef } from 'react'
 import { forwardRef } from 'react'
 import { useImperativeHandle } from 'react'
 import FileImg from '../assets/images/document.png'
+import { callWs, useUser } from 'material-crud'
+import { useSnackbar } from 'notistack'
 
 export type TerminalSize = 'minimizezd' | 'normal' | 'maximized'
 
@@ -22,6 +24,9 @@ export type RefType = {
   writeImg: (url: string, ext?: string) => void
 }
 export default forwardRef<RefType, Props>(({ terminalSize, onTerminalResize, hostname }, ref) => {
+  const { headers } = useUser()
+  const { enqueueSnackbar } = useSnackbar()
+
   const terminalRef = useRef<Terminal | null>()
   const { isDarkTheme } = useColorTheme()
   const classes = useClasses({ terminalSize, isDarkTheme })
@@ -64,7 +69,7 @@ export default forwardRef<RefType, Props>(({ terminalSize, onTerminalResize, hos
       const isImage = ext === 'jpg' || ext === 'png' || ext === 'jpeg'
       await writeConsole('> sreenshot')
 
-      terminalRef.current?.setState((act: any) => {
+      terminalRef.current?.setState(async (act: any) => {
         const actual = act.instances.find((e: any) => e.index === act.activeTab) || act.instances[0]
         const { instance } = actual
         const { inputWrapper } = instance
@@ -78,11 +83,17 @@ export default forwardRef<RefType, Props>(({ terminalSize, onTerminalResize, hos
         innerDiv.style.backgroundPosition = 'left'
         innerDiv.style.backgroundSize = 'cover'
 
+        const { error, response } = await callWs<Blob>({ url }, headers)
+        if (error) {
+          enqueueSnackbar('Error', { variant: 'error' })
+          return { ...act }
+        }
+
         const link = document.createElement('a')
         const linkText = document.createTextNode('Download')
         link.appendChild(linkText)
         link.title = 'Download'
-        link.href = url
+        link.href = URL.createObjectURL(response)
         link.target = '_blank'
         link.style.color = '#FFF'
 
@@ -95,7 +106,7 @@ export default forwardRef<RefType, Props>(({ terminalSize, onTerminalResize, hos
         return { ...act }
       })
     },
-    [writeConsole],
+    [writeConsole, headers, enqueueSnackbar],
   )
 
   useImperativeHandle(

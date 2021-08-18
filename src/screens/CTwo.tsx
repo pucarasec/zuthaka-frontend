@@ -132,7 +132,7 @@ const CTwo = () => {
             return {
               id: `${id}-${name}`,
               type: fieldType,
-              title: name,
+              title: fieldType === FormTypes.Multiple ? name.toUpperCase() : name,
               configuration:
                 fieldType === FormTypes.Multiple
                   ? [{ id: 'options', type: FormTypes.Input, title: name }]

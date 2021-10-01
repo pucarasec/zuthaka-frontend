@@ -235,7 +235,7 @@ export default () => {
       noBorder={false}
       ref={(e) => (crudRef.current = e)}
       description="Launcher"
-      name="Launcher"
+      name="Launchers"
       url={Urls.launcher}
       columns={columns}
       fields={fields}

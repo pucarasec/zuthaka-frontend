@@ -176,7 +176,7 @@ const CTwo = () => {
   return (
     <FullCrud
       description="C2 example"
-      name="C2"
+      name="C2s"
       actions={{ edit: true, delete: true, pinToTop: true }}
       url={Urls.c2}
       filters={filters}

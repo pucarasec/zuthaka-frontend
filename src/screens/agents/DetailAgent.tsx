@@ -7,7 +7,7 @@ import { useWindowSize } from 'material-crud'
 import Manage from './Manage'
 import FileManager from './FileManager'
 import ProcessManager from './ProcessManager'
-import PostExploitation from './PostExploitation'
+// import PostExploitation from './PostExploitation'
 import Storage from '../../util/Storage'
 import ZTerminal, { TerminalSize, RefType } from '../../components/ZTerminal'
 import { DetailWrapperProps } from '../../components/DetailWrapper'
@@ -53,7 +53,7 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
               <Tab label="Manage" />
               <Tab label="File Manager" />
               <Tab label="Process Manager" />
-              <Tab label="Post-Exploitation" />
+              {/* <Tab label="Post-Exploitation" /> */}
             </Tabs>
             {!detached && (
               <IconButton
@@ -88,9 +88,9 @@ export default ({ detached, ...agent }: DetailWrapperProps) => {
             <TabPanel value={value} index={2}>
               <ProcessManager terminalSize={terminalSize} detached={detached} />
             </TabPanel>
-            <TabPanel value={value} index={3}>
-              <PostExploitation terminal={terminalRef.current} />
-            </TabPanel>
+            {/* <TabPanel value={value} index={3}> */}
+              {/* <PostExploitation terminal={terminalRef.current} /> */}
+            {/* </TabPanel> */}
           </SwipeableViews>
         </React.Fragment>
       )}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   createFields,
   createColumns,
@@ -17,10 +17,13 @@ import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
 import { FaChevronCircleDown, FaChevronCircleUp, FaDownload } from 'react-icons/fa'
 import DenseTable from '../components/DenseTable'
 
+
+
 export default () => {
   useNavigatorConfig({ title: 'Launchers', noPadding: false })
   const crudRef = useRef<CrudRefProps | null>(null)
   const { setLoading } = useNavigator()
+  const [typeSelected, setTypeSelected] = useState('')
 
   const [listenersTypes, loadingListeners] = useAxios<WSResponse>({
     onInit: {
@@ -169,26 +172,30 @@ export default () => {
       ]),
     [listenersTypes, types],
   )
+  let collect_listeners = () =>{
+    var aux = types?.results.find(({ id }) => id.toString() === typeSelected.toString())
+        ?.available_listeners.map(({ listener_id, listener_type }: any) => ({ id: listener_id, title: `${listener_type} (${listener_id})` })) || [];
+      return aux}
 
   const fields = useMemo(() => {
     let optionsFields = [
-      {
-        id: 'listener_id',
-        title: 'Listener',
-        type: FormTypes.Options,
-        placeholder: 'Select one listener',
-        options: listenersTypes?.results.map(({ name, id }: any) => ({
-          id,
-          title: `${name} (${id})`,
-        })),
-        validate: Yup.number().required('Required'),
-      },
       {
         id: 'launcher_type',
         title: 'Type',
         type: FormTypes.Options,
         placeholder: 'Select one type',
-        options: types?.results?.map(({ name, id }: any) => ({ id, title: name })) || [],
+        // options: types?.results?.map(({ name, id }: any) => ({ id, title: name })) || [],
+        options: types?.results?.map(({ name, id }) => ({ id, title: name })) || [],
+        validate: Yup.number().required('Required'),
+        onSelect: (val: any) => setTypeSelected(val as string),
+        readonly: 'edit',
+      },
+      {
+        id: 'listener_id',
+        title: 'Listener',
+        type: FormTypes.Options,
+        placeholder: 'Select one listener',
+        options: collect_listeners(),
         validate: Yup.number().required('Required'),
       },
       types?.results
@@ -228,7 +235,7 @@ export default () => {
     ]
 
     return createFields(optionsFields.flat())
-  }, [listenersTypes, types])
+  }, [typeSelected, types])
 
   return (
     <FullCrud

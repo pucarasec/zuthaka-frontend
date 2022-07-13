@@ -52,7 +52,8 @@ export default () => {
           type: TableTypes.String,
           title: 'Launcher Name',
           cellComponent: ({ rowData }) =>
-            types?.results.find((x: any) => x.id === rowData.id)?.name || '-',
+            // types?.results.find((x: any) => x.id === rowData.id)?.name || '-',
+            types?.results.find((x: any) => x.id === rowData.launcher_type)?.name || '-',
           width: 2,
           align: 'center',
         },

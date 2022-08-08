@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   createFields,
   createColumns,
@@ -17,10 +17,17 @@ import { FieldProps } from 'material-crud/dist/components/Form/FormTypes'
 import { FaChevronCircleDown, FaChevronCircleUp, FaDownload } from 'react-icons/fa'
 import DenseTable from '../components/DenseTable'
 
+interface LauncherProps {
+  id: number 
+}
+
+
 export default () => {
   useNavigatorConfig({ title: 'Launchers', noPadding: false })
   const crudRef = useRef<CrudRefProps | null>(null)
   const { setLoading } = useNavigator()
+
+  const [typeSelected, setTypeSelected] = useState('')
 
   const [listenersTypes, loadingListeners] = useAxios<WSResponse>({
     onInit: {
@@ -174,23 +181,30 @@ export default () => {
   const fields = useMemo(() => {
     let optionsFields = [
       {
-        id: 'listener_id',
-        title: 'Listener',
-        type: FormTypes.Options,
-        placeholder: 'Select one listener',
-        options: listenersTypes?.results.map(({ name, id }: any) => ({
-          id,
-          title: `${name} (${id})`,
-        })),
-        validate: Yup.number().required('Required'),
-      },
-      {
         id: 'launcher_type',
         title: 'Type',
         type: FormTypes.Options,
         placeholder: 'Select one type',
         options: types?.results?.map(({ name, id }: any) => ({ id, title: name })) || [],
         validate: Yup.number().required('Required'),
+        onSelect: (val: any) => setTypeSelected(val as string),
+        readonly: 'edit',
+      },
+      {
+        id: 'listener_id',
+        title: 'Listener',
+        type: FormTypes.Options,
+        placeholder: 'Select one listener',
+        options: 
+        types?.results
+          .find(({ id }) => id.toString() === typeSelected.toString())
+          // ?.map(({ id, name }: any ) => ({ id:id, title: name})),
+          ?.available_listeners.map(({ listener_type, listener_id }: any) => ({
+          id: listener_id,
+          title: `${listener_type} (${listener_id})`,
+        })) || [],
+        validate: Yup.number().required('Required'),
+        readonly: 'edit',
       },
       types?.results
         .reduce((final, { id, options }): FieldProps[] => {
@@ -229,7 +243,7 @@ export default () => {
     ]
 
     return createFields(optionsFields.flat())
-  }, [listenersTypes, types])
+  }, [types, typeSelected])
 
   return (
     <FullCrud
@@ -257,7 +271,8 @@ export default () => {
                 link.href = url
                 link.setAttribute(
                   'download',
-                  `${types?.results.find((x: any) => x.id === rowData.id)?.name}.ps1`,
+                  // `${types?.results.find((x: any) => x.id === rowData.id)?.launcher_type}.ps1`,
+                  `${rowData.file_name}`,
                 )
                 document.body.appendChild(link)
                 link.click()

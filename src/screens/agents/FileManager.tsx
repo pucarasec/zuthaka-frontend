@@ -36,7 +36,7 @@ export default memo(() => {
   const rowDataRef = useRef<string[] | null>(null)
 
   const [files, setFiles] = useState<any[]>([null])
-  const [actualFolder, setActualFolder] = useState('/home/')
+  const [actualFolder, setActualFolder] = useState('$ZUTHAKAHOME$')
   const [folderChain, setFolderChain] = useState([{ id: 'home', name: 'Home' }])
 
   const showNotification = useCallback(

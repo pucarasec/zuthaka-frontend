@@ -187,12 +187,12 @@ export default () => {
       {
         id: 'c2_id',
         type: FormTypes.Options,
+        placeholder: 'Select one C2',
         options:
           listenerTypes?.results
             .find(({ id }) => id.toString() === typeSelected.toString())
             ?.available_c2s.map(({ c2_id, name }: any) => ({ id: c2_id, title: name })) || [],
         title: 'C2',
-        placeholder: 'Select one C2',
         validate: Yup.number().required('Required'),
       },
       listenerTypes?.results
